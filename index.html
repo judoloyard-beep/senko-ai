@@ -302,35 +302,6 @@ function renderHistory() {
     historyList.appendChild(item);
   });
 }
-
-// Suara Senko
-function speakSenko(text) {
-  if (!('speechSynthesis' in window)) {
-    console.log('Browser tidak mendukung suara');
-    return;
-  }
-
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(text);
-  const voices = window.speechSynthesis.getVoices();
-
-  const femaleVoice = voices.find(v =>
-    /female|woman|zira|samantha|google.*indonesia/i.test(v.name)
-  );
-
-  utterance.voice = femaleVoice || voices.find(v =>
-    v.lang.toLowerCase().startsWith('id')
-  ) || null;
-
-  utterance.lang = 'id-ID';
-  utterance.rate = 0.95;
-  utterance.pitch = 1.2;
-  utterance.volume = 1;
-
-  window.speechSynthesis.speak(utterance);
-  }
-  
 // Mengirim pesan ke AI
 async function ask() {
   const message = input.value.trim();
@@ -392,7 +363,6 @@ async function ask() {
       text: data.reply,
       type: 'ai'
     });
-    speakSenko(data.reply);
 
   } catch (error) {
     conversation.messages.push({

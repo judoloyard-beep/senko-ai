@@ -19,11 +19,30 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
           "x-goog-api-key": process.env.GEMINI_API_KEY
         },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: message }]
-          }]
-        })
+        
+body: JSON.stringify({
+  systemInstruction: {
+    parts: [{
+      text: `Kamu adalah Senko AI, asisten AI yang cerdas, ramah, kreatif, dan komunikatif.
+      
+Gunakan bahasa Indonesia yang santai dan natural.
+Jawab pertanyaan dengan akurat dan jelas.
+Pahami konteks percakapan sebelumnya.
+Jangan mengarang fakta.
+Jika tidak tahu, katakan dengan jujur.
+Berikan penjelasan mendalam jika dibutuhkan.
+Jangan selalu menjawab panjang jika pertanyaannya sederhana.`
+    }]
+  },
+  contents: [{
+    parts: [{ text: message }]
+  }],
+  generationConfig: {
+    temperature: 0.7,
+    maxOutputTokens: 1024
+  }
+})
+        
       }
     );
 

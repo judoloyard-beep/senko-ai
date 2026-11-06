@@ -218,12 +218,7 @@ function newChat() {
     id: crypto.randomUUID(),
     title: 'Percakapan baru',
     updatedAt: Date.now(),
-    messages: [
-      {
-        text: 'haii aku senko, kamu?',
-        type: 'ai'
-      }
-    ]
+    messages: []
   };
 
   conversations.unshift(conversation);

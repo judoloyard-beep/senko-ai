@@ -84,9 +84,7 @@ button {
   white-space: nowrap;
 }
 
-.history-delete {
-  background: #a33c50;
-}
+.history-delete { background: #a33c50; }
 
 #chat {
   flex: 1;
@@ -116,14 +114,26 @@ button {
   align-self: flex-start;
 }
 
+.msg-image {
+  display: block;
+  max-width: 210px;
+  max-height: 210px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  margin-top: 8px;
+}
+
 footer {
-  padding: 15px;
+  padding: 12px;
   display: flex;
   gap: 8px;
+  align-items: center;
   background: #121522;
 }
 
-input {
+#input {
   flex: 1;
   min-width: 0;
   padding: 14px;
@@ -132,6 +142,33 @@ input {
   background: #1c2030;
   color: white;
   font-size: 15px;
+}
+
+#imageBtn {
+  background: #292d43;
+  font-size: 18px;
+  padding: 12px;
+}
+
+#previewArea {
+  display: none;
+  padding: 10px 15px;
+  background: #121522;
+  border-top: 1px solid #25283a;
+}
+
+#previewArea.show { display: flex; }
+
+#previewImage {
+  width: 75px;
+  height: 75px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+#removeImage {
+  background: #a33c50;
+  margin-left: 10px;
 }
 
 button:disabled {
@@ -158,8 +195,27 @@ button:disabled {
 
 <main id="chat"></main>
 
+<div id="previewArea">
+  <img id="previewImage" alt="Preview gambar">
+  <button id="removeImage">✕</button>
+</div>
+
 <footer>
-  <input id="input" placeholder="Tanyakan sesuatu..." autocomplete="off">
+  <button id="imageBtn" type="button">📎</button>
+
+  <input id="imageInput" type="file"
+    accept="image/jpeg,image/png,image/webp"
+    hidden>
+
+  <input id="cameraInput" type="file"
+    accept="image/jpeg,image/png,image/webp"
+    capture="environment"
+    hidden>
+
+  <input id="input"
+    placeholder="Tanyakan sesuatu..."
+    autocomplete="off">
+
   <button id="send">Kirim</button>
 </footer>
 
@@ -170,7 +226,17 @@ const send = document.getElementById('send');
 const historyPanel = document.getElementById('historyPanel');
 const historyList = document.getElementById('historyList');
 
+const imageBtn = document.getElementById('imageBtn');
+const imageInput = document.getElementById('imageInput');
+const cameraInput = document.getElementById('cameraInput');
+const previewArea = document.getElementById('previewArea');
+const previewImage = document.getElementById('previewImage');
+const removeImage = document.getElementById('removeImage');
+
 const CHAT_KEY = 'senko_chats_v1';
+
+let selectedImage = null;
+let selectedMimeType = null;
 
 let userId = localStorage.getItem('senko_user_id');
 
@@ -202,7 +268,7 @@ function saveChats() {
       JSON.stringify(conversations)
     );
     return true;
-  } catch (error) {
+  } catch {
     alert('Penyimpanan penuh atau tidak tersedia.');
     return false;
   }
@@ -212,7 +278,6 @@ function getActiveChat() {
   return conversations.find(c => c.id === activeChatId);
 }
 
-// Membuat percakapan baru
 function newChat() {
   const conversation = {
     id: crypto.randomUUID(),
@@ -231,7 +296,6 @@ function newChat() {
   historyPanel.classList.remove('show');
 }
 
-// Menampilkan pesan
 function renderMessages() {
   chat.innerHTML = '';
 
@@ -241,14 +305,27 @@ function renderMessages() {
   conversation.messages.forEach(message => {
     const el = document.createElement('div');
     el.className = 'msg ' + message.type;
-    el.textContent = message.text;
+
+    if (message.text) {
+      const text = document.createElement('div');
+      text.textContent = message.text;
+      el.appendChild(text);
+    }
+
+    if (message.image) {
+      const img = document.createElement('img');
+      img.src = message.image;
+      img.className = 'msg-image';
+      img.alt = 'Gambar yang dikirim';
+      el.appendChild(img);
+    }
+
     chat.appendChild(el);
   });
 
   chat.scrollTop = chat.scrollHeight;
 }
 
-// Menampilkan daftar riwayat
 function renderHistory() {
   historyList.innerHTML = '';
 
@@ -302,11 +379,77 @@ function renderHistory() {
     historyList.appendChild(item);
   });
 }
-// Mengirim pesan ke AI
+
+// Pilihan galeri atau kamera
+imageBtn.addEventListener('click', () => {
+  const choice = confirm(
+    'Pilih OK untuk galeri. Pilih Batal untuk kamera.'
+  );
+
+  if (choice) {
+    imageInput.click();
+  } else {
+    cameraInput.click();
+  }
+});
+
+// Memproses gambar
+function handleImage(file) {
+  if (!file) return;
+
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp'
+  ];
+
+  if (!allowedTypes.includes(file.type)) {
+    alert('Format gambar harus JPG, PNG, atau WEBP.');
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Ukuran gambar maksimal 5 MB.');
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = () => {
+    const dataUrl = reader.result;
+
+    selectedImage = dataUrl.split(',')[1];
+    selectedMimeType = file.type;
+
+    previewImage.src = dataUrl;
+    previewArea.classList.add('show');
+  };
+
+  reader.readAsDataURL(file);
+}
+
+imageInput.addEventListener('change', e => {
+  handleImage(e.target.files[0]);
+  e.target.value = '';
+});
+
+cameraInput.addEventListener('change', e => {
+  handleImage(e.target.files[0]);
+  e.target.value = '';
+});
+
+removeImage.addEventListener('click', () => {
+  selectedImage = null;
+  selectedMimeType = null;
+  previewImage.src = '';
+  previewArea.classList.remove('show');
+});
+
+// Mengirim pesan dan gambar ke AI
 async function ask() {
   const message = input.value.trim();
 
-  if (!message || send.disabled) return;
+  if ((!message && !selectedImage) || send.disabled) return;
 
   let conversation = getActiveChat();
 
@@ -316,16 +459,26 @@ async function ask() {
   }
 
   const currentId = conversation.id;
+  const imageToSend = selectedImage;
+  const mimeToSend = selectedMimeType;
+  const imagePreview = imageToSend
+    ? `data:${mimeToSend};base64,${imageToSend}`
+    : null;
 
   input.value = '';
+  selectedImage = null;
+  selectedMimeType = null;
+  previewImage.src = '';
+  previewArea.classList.remove('show');
 
   conversation.messages.push({
     text: message,
+    image: imagePreview,
     type: 'user'
   });
 
   if (conversation.title === 'Percakapan baru') {
-    conversation.title = message.slice(0, 35);
+    conversation.title = (message || 'Gambar').slice(0, 35);
   }
 
   conversation.updatedAt = Date.now();
@@ -337,7 +490,10 @@ async function ask() {
   const loading = document.createElement('div');
   loading.className = 'msg ai';
   loading.textContent = 'Senko sedang berpikir...';
-  chat.appendChild(loading);
+
+  if (activeChatId === currentId) {
+    chat.appendChild(loading);
+  }
 
   send.disabled = true;
 
@@ -349,7 +505,13 @@ async function ask() {
       },
       body: JSON.stringify({
         message: message,
-        userId: userId
+        userId: userId,
+        image: imageToSend
+          ? {
+              mimeType: mimeToSend,
+              data: imageToSend
+            }
+          : null
       })
     });
 
@@ -384,7 +546,6 @@ async function ask() {
   }
 }
 
-// Tombol
 document.getElementById('newChatBtn')
   .addEventListener('click', newChat);
 
@@ -399,7 +560,6 @@ input.addEventListener('keydown', e => {
   if (e.key === 'Enter') ask();
 });
 
-// Memuat percakapan terakhir
 if (conversations.length) {
   activeChatId = [...conversations].sort(
     (a, b) => b.updatedAt - a.updatedAt

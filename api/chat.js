@@ -251,6 +251,35 @@ Jadilah Senko yang natural, menyenangkan, dan pintar.`;
       false,
       image || null
     );
+    
+// Simpan riwayat percakapan
+try {
+  const chatResponse = await fetch(
+    `${SUPABASE_URL}/rest/v1/chat_logs`,
+    {
+      method: "POST",
+      headers: {
+        ...dbHeaders,
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        user_message: message || "[Gambar dikirim]",
+        assistant_reply: reply
+      })
+    }
+  );
+
+  if (!chatResponse.ok) {
+    console.error(
+      "Gagal menyimpan chat:",
+      await chatResponse.text()
+    );
+  }
+} catch (error) {
+  console.error("Chat log error:", error.message);
+}
+    
 
     // 4. Ekstraksi memori hanya dari teks pengguna
     // Tidak mengambil fakta dari isi gambar.

@@ -53,7 +53,7 @@ Jadilah Senko yang terasa natural, menyenangkan, dan pintar.`;
 
     let response;
 
-    for (let attempt = 1; attempt <= 3; attempt++) {
+    for (let attempt = 1; attempt <= 2; attempt++) {
       response = await fetch(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
         {
@@ -71,7 +71,7 @@ Jadilah Senko yang terasa natural, menyenangkan, dan pintar.`;
             }],
             generationConfig: {
               temperature: 0.7,
-              maxOutputTokens: 1024
+              maxOutputTokens: 512
             }
           })
         }
@@ -85,7 +85,7 @@ Jadilah Senko yang terasa natural, menyenangkan, dan pintar.`;
 
       if (attempt < 3) {
         await new Promise(resolve =>
-          setTimeout(resolve, attempt * 2000)
+          setTimeout(resolve, attempt * 1000)
         );
       }
     }

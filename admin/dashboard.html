@@ -1,287 +1,190 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Senko AI | Admin Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senko AI Admin</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #090d18;
-      color: #f1f5f9;
-      min-height: 100vh;
-    }
-
-    .sidebar {
-      position: fixed;
-      inset: 0 auto 0 0;
-      width: 230px;
-      padding: 28px 18px;
-      background: #101729;
-      border-right: 1px solid #263149;
-    }
-
-    .brand {
-      font-size: 23px;
-      font-weight: bold;
-      margin-bottom: 40px;
-    }
-
-    .brand span {
-      color: #8b7cff;
-    }
-
-    .menu {
-      display: block;
-      padding: 13px;
-      margin-bottom: 8px;
-      border-radius: 10px;
-      color: #aab5c8;
-      text-decoration: none;
-    }
-
-    .menu.active,
-    .menu:hover {
-      background: #252447;
-      color: white;
-    }
-
-    .main {
-      margin-left: 230px;
-      padding: 35px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 35px;
-    }
-
-    h1 {
-      font-size: 26px;
-      margin-bottom: 8px;
-    }
-
-    .muted {
-      color: #8793aa;
-      font-size: 13px;
-    }
-
-    button {
-      background: #7566e9;
-      color: white;
-      border: 0;
-      border-radius: 9px;
-      padding: 11px 17px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #6353d6;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: #131c30;
-      border: 1px solid #27334b;
-      border-radius: 15px;
-      padding: 23px;
-    }
-
-    .card small {
-      color: #9aa8bf;
-      font-size: 13px;
-    }
-
-    .number {
-      font-size: 32px;
-      font-weight: bold;
-      margin-top: 15px;
-    }
-
-    .section {
-      margin-top: 28px;
-    }
-
-    .status {
-      color: #4ade80;
-      margin-top: 12px;
-      font-size: 14px;
-    }
-
-    #error {
-      color: #fb7185;
-      margin-top: 15px;
-      font-size: 13px;
-    }
-
-    @media (max-width: 750px) {
-      .sidebar {
-        position: static;
-        width: 100%;
-        padding: 17px;
-      }
-
-      .brand {
-        margin-bottom: 15px;
-      }
-
-      .main {
-        margin-left: 0;
-        padding: 22px 16px;
-      }
-
-      .grid {
-        grid-template-columns: 1fr;
-      }
-
-      .topbar {
-        align-items: flex-start;
-      }
-    }
-  </style>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#090d18;color:#f1f5f9;font-family:Arial,sans-serif}
+.sidebar{background:#101729;padding:25px;border-bottom:1px solid #263149}
+.brand{font-size:23px;font-weight:bold}
+.brand span{color:#8b7cff}
+.main{padding:25px;max-width:1100px;margin:auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+button{border:0;border-radius:8px;padding:10px 15px;background:#7566e9;color:white;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:20px 0}
+.card,.chat{background:#131c30;border:1px solid #27334b;border-radius:13px;padding:18px}
+small,.muted{color:#9aa8bf}
+.number{font-size:29px;font-weight:bold;margin-top:12px}
+h2{font-size:19px;margin-bottom:16px}
+.chat{margin-bottom:13px;overflow-wrap:anywhere}
+.chathead{display:flex;justify-content:space-between;gap:10px;margin-bottom:15px;flex-wrap:wrap}
+.message{background:#1c2940;padding:12px;border-radius:9px;margin-top:8px;white-space:pre-wrap}
+.reply{background:#252044}
+.label{font-size:12px;color:#a99cff;margin-bottom:6px}
+#error{color:#fb7185;margin-top:12px}
+#empty{color:#9aa8bf;padding:20px 0}
+@media(max-width:600px){
+ .grid{grid-template-columns:1fr}
+ .main{padding:17px}
+}
+</style>
 </head>
 
 <body>
 
-  <aside class="sidebar">
-    <div class="brand">SENKO <span>AI</span></div>
-    <a class="menu active" href="#">Dashboard</a>
-    <a class="menu" href="#statistics">Statistik</a>
-    <a class="menu" href="#system">Status sistem</a>
-  </aside>
+<header class="sidebar">
+  <div class="brand">SENKO <span>AI</span></div>
+  <small>Admin Control Panel</small>
+</header>
 
-  <main class="main">
-    <div class="topbar">
-      <div>
-        <h1>Dashboard</h1>
-        <p class="muted">Panel pengelolaan Senko AI</p>
-      </div>
+<main class="main">
 
-      <button id="logoutBtn">Logout</button>
+  <div class="top">
+    <div>
+      <h1>Dashboard</h1>
+      <small>Pengelolaan Senko AI</small>
+    </div>
+    <button id="logoutBtn">Logout</button>
+  </div>
+
+  <h2>Statistik</h2>
+
+  <div class="grid">
+    <div class="card">
+      <small>Total pengguna</small>
+      <div class="number" id="totalUsers">--</div>
     </div>
 
-    <section id="statistics">
-      <h2 style="font-size:18px; margin-bottom:18px;">
-        Statistik
-      </h2>
+    <div class="card">
+      <small>Total percakapan</small>
+      <div class="number" id="totalChats">--</div>
+    </div>
 
-      <div class="grid">
-        <div class="card">
-          <small>Total pengguna</small>
-          <div class="number" id="totalUsers">--</div>
-        </div>
+    <div class="card">
+      <small>Total memori</small>
+      <div class="number" id="totalMemories">--</div>
+    </div>
+  </div>
 
-        <div class="card">
-          <small>Total percakapan</small>
-          <div class="number" id="totalChats">--</div>
-        </div>
+  <section style="margin-top:35px">
+    <h2>Riwayat Percakapan</h2>
+    <small>50 percakapan terbaru</small>
 
-        <div class="card">
-          <small>Total memori</small>
-          <div class="number" id="totalMemories">--</div>
-        </div>
-      </div>
-    </section>
+    <div id="history" style="margin-top:18px">
+      <p id="empty">Memuat riwayat...</p>
+    </div>
 
-    <section class="section" id="system">
-      <div class="card">
-        <h2 style="font-size:18px;">Status sistem</h2>
-        <p class="status">● Dashboard aktif</p>
-        <p class="muted" style="margin-top:10px;">
-          Statistik diperbarui saat dashboard dibuka.
-        </p>
-        <p id="error"></p>
-      </div>
-    </section>
-  </main>
+    <p id="error"></p>
+  </section>
 
-  <script>
-    async function checkAdmin() {
-      try {
-        const response = await fetch("/api/admin/verify", {
-          credentials: "same-origin",
-          cache: "no-store"
-        });
+</main>
 
-        const data = await response.json();
+<script>
+async function checkAdmin(){
+  try{
+    const response=await fetch("/api/admin/verify",{
+      credentials:"same-origin",
+      cache:"no-store"
+    });
 
-        if (!response.ok || !data.authenticated) {
-          location.replace("/admin.html");
-          return false;
-        }
+    const data=await response.json();
 
-        return true;
-      } catch {
-        location.replace("/admin.html");
-        return false;
-      }
+    if(!response.ok||!data.authenticated){
+      location.replace("/admin.html");
+      return false;
     }
 
-    async function loadStats() {
-      try {
-        const response = await fetch("/api/admin/stats", {
-          credentials: "same-origin",
-          cache: "no-store"
-        });
+    return true;
+  }catch{
+    location.replace("/admin.html");
+    return false;
+  }
+}
 
-        if (!response.ok) {
-          throw new Error("Statistik gagal dimuat");
-        }
+async function loadStats(){
+  const response=await fetch("/api/admin/stats",{
+    credentials:"same-origin",
+    cache:"no-store"
+  });
 
-        const data = await response.json();
+  if(!response.ok) throw new Error("Statistik gagal dimuat");
 
-        document.getElementById("totalUsers").textContent =
-          data.totalUsers ?? "--";
+  const data=await response.json();
 
-        document.getElementById("totalChats").textContent =
-          data.totalChats ?? "--";
+  document.getElementById("totalUsers").textContent=data.totalUsers??"--";
+  document.getElementById("totalChats").textContent=data.totalChats??"--";
+  document.getElementById("totalMemories").textContent=data.totalMemories??"--";
+}
 
-        document.getElementById("totalMemories").textContent =
-          data.totalMemories ?? "--";
+function addText(parent,tag,className,value){
+  const element=document.createElement(tag);
+  element.className=className;
+  element.textContent=value;
+  parent.appendChild(element);
+  return element;
+}
 
-      } catch (error) {
-        document.getElementById("error").textContent =
-          error.message;
-      }
-    }
+async function loadHistory(){
+  const response=await fetch("/api/admin/history",{
+    credentials:"same-origin",
+    cache:"no-store"
+  });
 
-    document.getElementById("logoutBtn").addEventListener(
-      "click",
-      async () => {
-        await fetch("/api/admin/logout", {
-          method: "POST",
-          credentials: "same-origin"
-        });
+  if(!response.ok) throw new Error("Riwayat chat gagal dimuat");
 
-        location.replace("/admin.html");
-      }
-    );
+  const data=await response.json();
+  const container=document.getElementById("history");
+  container.replaceChildren();
 
-    async function startDashboard() {
-      const authenticated = await checkAdmin();
+  if(!data.chats||data.chats.length===0){
+    addText(container,"p","muted","Belum ada percakapan.");
+    return;
+  }
 
-      if (authenticated) {
-        await loadStats();
-      }
-    }
+  data.chats.forEach(chat=>{
+    const card=document.createElement("article");
+    card.className="chat";
 
-    startDashboard();
-  </script>
+    const date=chat.created_at
+      ?new Date(chat.created_at).toLocaleString("id-ID")
+      :"Tanggal tidak tersedia";
+
+    addText(card,"div","chathead","Percakapan • "+date);
+
+    addText(card,"div","label","PENGGUNA");
+    addText(card,"div","message",chat.user_message||"");
+
+    addText(card,"div","label","SENKO AI");
+    addText(card,"div","message reply",chat.assistant_reply||"");
+
+    container.appendChild(card);
+  });
+}
+
+document.getElementById("logoutBtn").addEventListener("click",async()=>{
+  await fetch("/api/admin/logout",{
+    method:"POST",
+    credentials:"same-origin"
+  });
+
+  location.replace("/admin.html");
+});
+
+async function startDashboard(){
+  if(!await checkAdmin()) return;
+
+  try{
+    await Promise.all([loadStats(),loadHistory()]);
+  }catch(error){
+    document.getElementById("error").textContent=error.message;
+  }
+}
+
+startDashboard();
+</script>
 
 </body>
 </html>

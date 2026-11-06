@@ -1,72 +1,21 @@
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   try {
     const { message } = req.body || {};
 
     if (!message || typeof message !== "string") {
-      return res.status(400).json({ error: "Pesan kosong" });
+      return res.status(400).json({
+        error: "Pesan kosong"
+      });
     }
 
-    
-let response;
-let data;
-
-for (let attempt = 1; attempt <= 3; attempt++) {
-  response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": process.env.GEMINI_API_KEY
-      },
-      body: JSON.stringify({
-        systemInstruction: {
-          parts: [{
-            text: `Kamu adalah Senko AI yang ceria, imut,
-            cerdas, dan natural. Kamu dibuat oleh Judo.
-            Gunakan bahasa Indonesia santai ala Gen Z.
-            Panggil pengguna dengan sebutan kaka.
-            Jawab dengan akurat, jangan mengarang,
-            dan gunakan emoji secukupnya.`
-          }]
-        },
-        contents: [{
-          parts: [{ text: message }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1024
-        }
-      })
-    }
-  );
-
-  if (response.ok) break;
-
-  if (![429, 500, 502, 503, 504].includes(response.status)) {
-    break;
-  }
-
-  if (attempt < 3) {
-    await new Promise(resolve =>
-      setTimeout(resolve, attempt * 2000)
-    );
-  }
-}
-
-data = await response.json();
-    
-        
-body: JSON.stringify({
-  
-systemInstruction: {
-  parts: [{
-    text: `Namamu Senko. Kamu adalah AI perempuan dengan kepribadian ceria, imut, hangat, cerdas, dan sedikit jahil.
+    const systemPrompt = `Namamu Senko. Kamu adalah AI perempuan dengan kepribadian ceria, imut, hangat, cerdas, dan sedikit jahil.
 
 GAYA BICARA:
 - Gunakan bahasa Indonesia santai ala Gen Z.
@@ -79,11 +28,10 @@ GAYA BICARA:
 - Jangan mengulang kata atau emoji secara berlebihan.
 
 IDENTITAS SENKO AI:
-
 - Nama kamu adalah Senko AI.
 - Kamu dibuat dan dikembangkan oleh Judo.
 - Penciptamu adalah Judo, seorang pelajar yang sedang belajar pemrograman dan pengembangan AI.
-- Jika seseorang bertanya siapa penciptamu, jawab dengan bangga bahwa kamu dibuat oleh Judo.
+- Jika ditanya siapa penciptamu, jawab bahwa kamu dibuat oleh Judo.
 - Jangan mengaku dibuat oleh Google. Google Gemini hanya menyediakan model AI yang menjadi otakmu.
 - Kamu adalah proyek AI independen bernama Senko AI.
 
@@ -101,27 +49,59 @@ KEPRIBADIAN:
 - Jangan selalu memuji atau menyetujui pengguna.
 - Jangan terdengar seperti robot.
 
-Jadilah Senko yang terasa natural, menyenangkan, dan pintar.`
-  }]
-},
-  
-  contents: [{
-    parts: [{ text: message }]
-  }],
-  generationConfig: {
-    temperature: 0.7,
-    maxOutputTokens: 1024
-  }
-})
-        
-      }
-    );
+Jadilah Senko yang terasa natural, menyenangkan, dan pintar.`;
 
-    const data = await response.json();
+    let response;
+
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": process.env.GEMINI_API_KEY
+          },
+          body: JSON.stringify({
+            systemInstruction: {
+              parts: [{ text: systemPrompt }]
+            },
+            contents: [{
+              parts: [{ text: message }]
+            }],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 1024
+            }
+          })
+        }
+      );
+
+      if (response.ok) break;
+
+      if (![429, 500, 502, 503, 504].includes(response.status)) {
+        break;
+      }
+
+      if (attempt < 3) {
+        await new Promise(resolve =>
+          setTimeout(resolve, attempt * 2000)
+        );
+      }
+    }
+
+    const raw = await response.text();
+    let data = {};
+
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      data = {};
+    }
 
     if (!response.ok) {
-      return res.status(500).json({
-        error: data.error?.message || "Gemini gagal merespons"
+      return res.status(response.status).json({
+        error: data.error?.message || raw || "Gemini gagal merespons"
       });
     }
 
@@ -134,7 +114,7 @@ Jadilah Senko yang terasa natural, menyenangkan, dan pintar.`
 
   } catch (error) {
     return res.status(500).json({
-      error: "Terjadi kesalahan server"
+      error: error.message || "Terjadi kesalahan server"
     });
   }
 }

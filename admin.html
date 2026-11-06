@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senko Admin Login</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #090d18;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    .login {
+      width: min(90%, 360px);
+      padding: 30px;
+      border: 1px solid #28334c;
+      border-radius: 18px;
+      background: #111827;
+    }
+    h2 { margin-top: 0; }
+    p { color: #9ca3af; }
+    input, button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      border-radius: 9px;
+      border: 1px solid #374151;
+    }
+    input {
+      background: #090d18;
+      color: white;
+    }
+    button {
+      background: #6366f1;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #status { font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="login">
+    <h2>Senko Admin</h2>
+    <p>Masuk ke pusat kendali Senko AI.</p>
+
+    <form id="loginForm">
+      <input id="username" placeholder="Username"
+        autocomplete="username" required>
+
+      <input id="password" type="password"
+        placeholder="Password"
+        autocomplete="current-password" required>
+
+      <button type="submit">Login Admin</button>
+    </form>
+
+    <p id="status"></p>
+  </div>
+
+  <script>
+    document.getElementById("loginForm")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const status = document.getElementById("status");
+        status.textContent = "Memeriksa akun...";
+
+        try {
+          const response = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({
+              username: document.getElementById("username").value,
+              password: document.getElementById("password").value
+            })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            status.textContent = data.error || "Login gagal";
+            return;
+          }
+
+          window.location.href = "/admin/dashboard.html";
+        } catch {
+          status.textContent = "Gagal menghubungi server.";
+        }
+      });
+  </script>
+</body>
+</html>

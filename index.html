@@ -5,97 +5,185 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Senko AI</title>
+
 <style>
-*{box-sizing:border-box}
-body{
- margin:0;background:#0b0d14;color:white;
- font-family:Arial,sans-serif;
- display:flex;flex-direction:column;height:100dvh;
+* {
+  box-sizing: border-box;
 }
-header{
- padding:20px;background:#121522;
- border-bottom:1px solid #25283a;
- font-size:22px;font-weight:bold;
+
+body {
+  margin: 0;
+  background: #0b0d14;
+  color: white;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
 }
-header span{color:#8b7cff}
-#chat{
- flex:1;overflow-y:auto;padding:20px;
- display:flex;flex-direction:column;gap:15px;
+
+header {
+  padding: 20px;
+  background: #121522;
+  border-bottom: 1px solid #25283a;
+  font-size: 22px;
+  font-weight: bold;
 }
-.msg{
- padding:13px 16px;border-radius:15px;
- max-width:85%;line-height:1.5;white-space:pre-wrap;
+
+header span {
+  color: #8b7cff;
 }
-.user{background:#6254dc;align-self:flex-end}
-.ai{background:#191d2b;align-self:flex-start}
-footer{
- padding:15px;display:flex;gap:8px;
- background:#121522;
+
+#chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
-input{
- flex:1;min-width:0;padding:14px;
- border-radius:12px;border:1px solid #34384c;
- background:#1c2030;color:white;font-size:15px;
+
+.msg {
+  padding: 13px 16px;
+  border-radius: 15px;
+  max-width: 85%;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
-button{
- border:0;border-radius:12px;padding:0 18px;
- background:#7868ff;color:white;font-weight:bold;
+
+.user {
+  background: #6254dc;
+  align-self: flex-end;
+}
+
+.ai {
+  background: #191d2b;
+  align-self: flex-start;
+}
+
+footer {
+  padding: 15px;
+  display: flex;
+  gap: 8px;
+  background: #121522;
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #34384c;
+  background: #1c2030;
+  color: white;
+  font-size: 15px;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 0 18px;
+  background: #7868ff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
 }
 </style>
 </head>
+
 <body>
+
 <header>✦ <span>SENKO</span> AI</header>
+
 <main id="chat">
-<div class="msg ai">Halo! Aku Senko AI. Ada yang bisa kubantu?</div>
+  <div class="msg ai">
+    haii aku senko, kamu?
+  </div>
 </main>
+
 <footer>
-<input id="input" placeholder="Tanyakan sesuatu..." />
-<button id="send">Kirim</button>
+  <input id="input" placeholder="Tanyakan sesuatu..." autocomplete="off">
+  <button id="send">Kirim</button>
 </footer>
+
 <script>
-const chat=document.getElementById('chat');
-const input=document.getElementById('input');
-const send=document.getElementById('send');
- let userId = localStorage.getItem('senko_user_id');
+const chat = document.getElementById('chat');
+const input = document.getElementById('input');
+const send = document.getElementById('send');
+
+// identitas pengguna
+let userId = localStorage.getItem('senko_user_id');
 
 if (!userId) {
   userId = crypto.randomUUID();
   localStorage.setItem('senko_user_id', userId);
- }
-
-function add(text,type){
- const el=document.createElement('div');
- el.className='msg '+type;
- el.textContent=text;
- chat.appendChild(el);
- chat.scrollTop=chat.scrollHeight;
 }
 
-async function ask(){
- const message=input.value.trim();
- if(!message)return;
- input.value='';
- add(message,'user');
- const loading=document.createElement('div');
- loading.className='msg ai';
- loading.textContent='Senko sedang berpikir...';
- chat.appendChild(loading);
- try{
-  const res=await fetch('/api/chat',{
-   method:'POST',
-   headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({message, userId})
-  const data=await res.json();
-  if(!res.ok)throw new Error(data.error||'Terjadi kesalahan');
-  loading.textContent=data.reply;
- }catch(e){
-  loading.textContent='Gagal: '+e.message;
- }
+// menampilkan pesan
+function add(text, type) {
+  const el = document.createElement('div');
+  el.className = 'msg ' + type;
+  el.textContent = text;
+  chat.appendChild(el);
+  chat.scrollTop = chat.scrollHeight;
 }
-send.onclick=ask;
-input.addEventListener('keydown',e=>{
- if(e.key==='Enter')ask();
+
+// mengirim pesan
+async function ask() {
+  const message = input.value.trim();
+
+  if (!message || send.disabled) return;
+
+  input.value = '';
+  add(message, 'user');
+
+  const loading = document.createElement('div');
+  loading.className = 'msg ai';
+  loading.textContent = 'Senko sedang berpikir...';
+  chat.appendChild(loading);
+
+  send.disabled = true;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: message,
+        userId: userId
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Terjadi kesalahan');
+    }
+
+    loading.textContent = data.reply;
+
+  } catch (error) {
+    loading.textContent = 'Gagal: ' + error.message;
+  } finally {
+    send.disabled = false;
+    input.focus();
+  }
+}
+
+send.addEventListener('click', ask);
+
+input.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    ask();
+  }
 });
 </script>
+
 </body>
 </html>

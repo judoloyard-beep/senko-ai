@@ -76,10 +76,10 @@ export default async function handler(req, res) {
       headers: dbHeaders
     });
 
-    if (!memoryRes.ok) {
-  const detail = await memoryRes.text();
-  console.error("SUPABASE ERROR:", memoryRes.status, detail);
-  throw new Error("Supabase: " + memoryRes.status + " " + detail);
+    if (!memoryResponse.ok) {
+  const detail = await memoryResponse.text();
+  console.error("SUPABASE ERROR:", memoryResponse.status, detail);
+  throw new Error("Supabase: " + memoryResponse.status + " " + detail);
     }
 
     const memories = await memoryResponse.json();

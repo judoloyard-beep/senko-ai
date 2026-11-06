@@ -1,108 +1,287 @@
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Senko AI Admin</title>
-<style>
-*{box-sizing:border-box}
-body{
-  margin:0;background:#090d18;color:white;
-  font-family:Arial,sans-serif;padding:22px;
-}
-header{display:flex;justify-content:space-between;align-items:center}
-h1{font-size:23px}
-small{color:#9ca3af}
-.grid{
- display:grid;grid-template-columns:repeat(2,1fr);
- gap:13px;margin-top:25px
-}
-.card{
- background:#151d30;border:1px solid #26334c;
- padding:20px;border-radius:15px
-}
-.number{font-size:27px;font-weight:bold;margin-top:12px}
-.menu{margin-top:25px}
-.item{
- display:block;background:#151d30;padding:17px;
- margin-bottom:12px;border-radius:12px;
- color:white;text-decoration:none
-}
-button{
- background:#ef4444;color:white;border:0;
- padding:11px 16px;border-radius:9px
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Senko AI | Admin Dashboard</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #090d18;
+      color: #f1f5f9;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 230px;
+      padding: 28px 18px;
+      background: #101729;
+      border-right: 1px solid #263149;
+    }
+
+    .brand {
+      font-size: 23px;
+      font-weight: bold;
+      margin-bottom: 40px;
+    }
+
+    .brand span {
+      color: #8b7cff;
+    }
+
+    .menu {
+      display: block;
+      padding: 13px;
+      margin-bottom: 8px;
+      border-radius: 10px;
+      color: #aab5c8;
+      text-decoration: none;
+    }
+
+    .menu.active,
+    .menu:hover {
+      background: #252447;
+      color: white;
+    }
+
+    .main {
+      margin-left: 230px;
+      padding: 35px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 35px;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .muted {
+      color: #8793aa;
+      font-size: 13px;
+    }
+
+    button {
+      background: #7566e9;
+      color: white;
+      border: 0;
+      border-radius: 9px;
+      padding: 11px 17px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #6353d6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #131c30;
+      border: 1px solid #27334b;
+      border-radius: 15px;
+      padding: 23px;
+    }
+
+    .card small {
+      color: #9aa8bf;
+      font-size: 13px;
+    }
+
+    .number {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    .section {
+      margin-top: 28px;
+    }
+
+    .status {
+      color: #4ade80;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    #error {
+      color: #fb7185;
+      margin-top: 15px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 750px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        padding: 17px;
+      }
+
+      .brand {
+        margin-bottom: 15px;
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 22px 16px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<header>
-  <div>
-    <h1>Senko AI</h1>
-    <small>Admin Control Panel</small>
-  </div>
-  <button onclick="logout()">Logout</button>
-</header>
+  <aside class="sidebar">
+    <div class="brand">SENKO <span>AI</span></div>
+    <a class="menu active" href="#">Dashboard</a>
+    <a class="menu" href="#statistics">Statistik</a>
+    <a class="menu" href="#system">Status sistem</a>
+  </aside>
 
-<h2>Dashboard</h2>
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Dashboard</h1>
+        <p class="muted">Panel pengelolaan Senko AI</p>
+      </div>
 
-<div class="grid">
-  <div class="card">
-    <small>Total pengguna</small>
-    <div class="number">--</div>
-  </div>
-  <div class="card">
-    <small>Total percakapan</small>
-    <div class="number">--</div>
-  </div>
-  <div class="card">
-    <small>Memori tersimpan</small>
-    <div class="number">--</div>
-  </div>
-  <div class="card">
-    <small>Status AI</small>
-    <div class="number">Online</div>
-  </div>
-</div>
+      <button id="logoutBtn">Logout</button>
+    </div>
 
-<div class="menu">
-  <h3>Menu pengelolaan</h3>
-  <a class="item" href="#">👥 Manajemen pengguna</a>
-  <a class="item" href="#">💬 Riwayat percakapan</a>
-  <a class="item" href="#">🧠 Manajemen memori</a>
-  <a class="item" href="#">⚙️ Pengaturan AI</a>
-</div>
+    <section id="statistics">
+      <h2 style="font-size:18px; margin-bottom:18px;">
+        Statistik
+      </h2>
 
-<script>
-async function checkAdmin(){
-  try{
-    const response = await fetch("/api/admin/verify", {
-      credentials:"same-origin",
-      cache:"no-store"
-    });
+      <div class="grid">
+        <div class="card">
+          <small>Total pengguna</small>
+          <div class="number" id="totalUsers">--</div>
+        </div>
 
-    const data = await response.json();
+        <div class="card">
+          <small>Total percakapan</small>
+          <div class="number" id="totalChats">--</div>
+        </div>
 
-    if(!response.ok || !data.authenticated){
-      location.replace("/admin.html");
+        <div class="card">
+          <small>Total memori</small>
+          <div class="number" id="totalMemories">--</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="system">
+      <div class="card">
+        <h2 style="font-size:18px;">Status sistem</h2>
+        <p class="status">● Dashboard aktif</p>
+        <p class="muted" style="margin-top:10px;">
+          Statistik diperbarui saat dashboard dibuka.
+        </p>
+        <p id="error"></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function checkAdmin() {
+      try {
+        const response = await fetch("/api/admin/verify", {
+          credentials: "same-origin",
+          cache: "no-store"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.authenticated) {
+          location.replace("/admin.html");
+          return false;
+        }
+
+        return true;
+      } catch {
+        location.replace("/admin.html");
+        return false;
+      }
     }
-  }catch{
-    location.replace("/admin.html");
-  }
-}
 
-async function logout(){
-  await fetch("/api/admin/logout", {
-    method:"POST",
-    credentials:"same-origin"
-  });
+    async function loadStats() {
+      try {
+        const response = await fetch("/api/admin/stats", {
+          credentials: "same-origin",
+          cache: "no-store"
+        });
 
-  location.replace("/admin.html");
-}
+        if (!response.ok) {
+          throw new Error("Statistik gagal dimuat");
+        }
 
-checkAdmin();
-</script>
+        const data = await response.json();
+
+        document.getElementById("totalUsers").textContent =
+          data.totalUsers ?? "--";
+
+        document.getElementById("totalChats").textContent =
+          data.totalChats ?? "--";
+
+        document.getElementById("totalMemories").textContent =
+          data.totalMemories ?? "--";
+
+      } catch (error) {
+        document.getElementById("error").textContent =
+          error.message;
+      }
+    }
+
+    document.getElementById("logoutBtn").addEventListener(
+      "click",
+      async () => {
+        await fetch("/api/admin/logout", {
+          method: "POST",
+          credentials: "same-origin"
+        });
+
+        location.replace("/admin.html");
+      }
+    );
+
+    async function startDashboard() {
+      const authenticated = await checkAdmin();
+
+      if (authenticated) {
+        await loadStats();
+      }
+    }
+
+    startDashboard();
+  </script>
 
 </body>
 </html>

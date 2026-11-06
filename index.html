@@ -56,6 +56,12 @@ button{
 const chat=document.getElementById('chat');
 const input=document.getElementById('input');
 const send=document.getElementById('send');
+ let userId = localStorage.getItem('senko_user_id');
+
+if (!userId) {
+  userId = crypto.randomUUID();
+  localStorage.setItem('senko_user_id', userId);
+ }
 
 function add(text,type){
  const el=document.createElement('div');
@@ -78,8 +84,7 @@ async function ask(){
   const res=await fetch('/api/chat',{
    method:'POST',
    headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({message})
-  });
+   body:JSON.stringify({message, userId})
   const data=await res.json();
   if(!res.ok)throw new Error(data.error||'Terjadi kesalahan');
   loading.textContent=data.reply;

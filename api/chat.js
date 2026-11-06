@@ -11,14 +11,56 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Pesan kosong" });
     }
 
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": process.env.GEMINI_API_KEY
+    
+let response;
+let data;
+
+for (let attempt = 1; attempt <= 3; attempt++) {
+  response = await fetch(
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": process.env.GEMINI_API_KEY
+      },
+      body: JSON.stringify({
+        systemInstruction: {
+          parts: [{
+            text: `Kamu adalah Senko AI yang ceria, imut,
+            cerdas, dan natural. Kamu dibuat oleh Judo.
+            Gunakan bahasa Indonesia santai ala Gen Z.
+            Panggil pengguna dengan sebutan kaka.
+            Jawab dengan akurat, jangan mengarang,
+            dan gunakan emoji secukupnya.`
+          }]
         },
+        contents: [{
+          parts: [{ text: message }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1024
+        }
+      })
+    }
+  );
+
+  if (response.ok) break;
+
+  if (![429, 500, 502, 503, 504].includes(response.status)) {
+    break;
+  }
+
+  if (attempt < 3) {
+    await new Promise(resolve =>
+      setTimeout(resolve, attempt * 2000)
+    );
+  }
+}
+
+data = await response.json();
+    
         
 body: JSON.stringify({
   

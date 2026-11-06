@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Senko AI Admin</title>
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;background:#090d18;color:white;
+  font-family:Arial,sans-serif;padding:22px;
+}
+header{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:23px}
+small{color:#9ca3af}
+.grid{
+ display:grid;grid-template-columns:repeat(2,1fr);
+ gap:13px;margin-top:25px
+}
+.card{
+ background:#151d30;border:1px solid #26334c;
+ padding:20px;border-radius:15px
+}
+.number{font-size:27px;font-weight:bold;margin-top:12px}
+.menu{margin-top:25px}
+.item{
+ display:block;background:#151d30;padding:17px;
+ margin-bottom:12px;border-radius:12px;
+ color:white;text-decoration:none
+}
+button{
+ background:#ef4444;color:white;border:0;
+ padding:11px 16px;border-radius:9px
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Senko AI</h1>
+    <small>Admin Control Panel</small>
+  </div>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<h2>Dashboard</h2>
+
+<div class="grid">
+  <div class="card">
+    <small>Total pengguna</small>
+    <div class="number">--</div>
+  </div>
+  <div class="card">
+    <small>Total percakapan</small>
+    <div class="number">--</div>
+  </div>
+  <div class="card">
+    <small>Memori tersimpan</small>
+    <div class="number">--</div>
+  </div>
+  <div class="card">
+    <small>Status AI</small>
+    <div class="number">Online</div>
+  </div>
+</div>
+
+<div class="menu">
+  <h3>Menu pengelolaan</h3>
+  <a class="item" href="#">👥 Manajemen pengguna</a>
+  <a class="item" href="#">💬 Riwayat percakapan</a>
+  <a class="item" href="#">🧠 Manajemen memori</a>
+  <a class="item" href="#">⚙️ Pengaturan AI</a>
+</div>
+
+<script>
+async function checkAdmin(){
+  try{
+    const response = await fetch("/api/admin/verify", {
+      credentials:"same-origin",
+      cache:"no-store"
+    });
+
+    const data = await response.json();
+
+    if(!response.ok || !data.authenticated){
+      location.replace("/admin.html");
+    }
+  }catch{
+    location.replace("/admin.html");
+  }
+}
+
+async function logout(){
+  await fetch("/api/admin/logout", {
+    method:"POST",
+    credentials:"same-origin"
+  });
+
+  location.replace("/admin.html");
+}
+
+checkAdmin();
+</script>
+
+</body>
+</html>

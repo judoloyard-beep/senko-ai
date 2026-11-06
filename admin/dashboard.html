@@ -72,6 +72,9 @@ h2{font-size:19px;margin-bottom:16px}
   <section style="margin-top:35px">
     <h2>Riwayat Percakapan</h2>
     <small>50 percakapan terbaru</small>
+   <button id="deleteAllBtn" style="background:#dc2626;margin-top:12px">
+  Hapus Semua Riwayat
+   </button>
 
     <div id="history" style="margin-top:18px">
       <p id="empty">Memuat riwayat...</p>
@@ -153,6 +156,37 @@ async function loadHistory(){
       :"Tanggal tidak tersedia";
 
     addText(card,"div","chathead","Percakapan • "+date);
+   const deleteBtn = document.createElement("button");
+deleteBtn.textContent = "Hapus Percakapan";
+deleteBtn.style.background = "#dc2626";
+
+deleteBtn.addEventListener("click", async () => {
+  if (!confirm("Yakin ingin menghapus percakapan ini?")) return;
+
+  const response = await fetch("/api/admin/delete-chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "same-origin",
+    body: JSON.stringify({
+      action: "one",
+      id: chat.id
+    })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    alert(result.error || "Gagal menghapus");
+    return;
+  }
+
+  await loadHistory();
+  await loadStats();
+});
+
+card.appendChild(deleteBtn);
 
     addText(card,"div","label","PENGGUNA");
     addText(card,"div","message",chat.user_message||"");
@@ -182,7 +216,36 @@ async function startDashboard(){
     document.getElementById("error").textContent=error.message;
   }
 }
+document.getElementById("deleteAllBtn").addEventListener("click", async () => {
+  const confirmation = prompt(
+    'Ketik HAPUS SEMUA RIWAYAT untuk menghapus seluruh percakapan:'
+  );
 
+  if (confirmation !== "HAPUS SEMUA RIWAYAT") return;
+
+  const response = await fetch("/api/admin/delete-chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "same-origin",
+    body: JSON.stringify({
+      action: "all",
+      confirm: confirmation
+    })
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    alert(result.error || "Gagal menghapus");
+    return;
+  }
+
+  alert("Seluruh riwayat percakapan berhasil dihapus.");
+  await loadHistory();
+  await loadStats();
+});
 startDashboard();
 </script>
 

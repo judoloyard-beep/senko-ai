@@ -7,30 +7,85 @@
 <title>Senko AI</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   background: #0b0d14;
   color: white;
   font-family: Arial, sans-serif;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
 }
 
 header {
-  padding: 20px;
+  padding: 15px;
   background: #121522;
   border-bottom: 1px solid #25283a;
-  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.logo {
+  font-size: 21px;
   font-weight: bold;
 }
 
-header span {
-  color: #8b7cff;
+.logo span { color: #8b7cff; }
+
+.header-buttons {
+  display: flex;
+  gap: 7px;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 13px;
+  background: #7868ff;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#historyPanel {
+  display: none;
+  background: #121522;
+  border-bottom: 1px solid #25283a;
+  padding: 12px;
+  max-height: 230px;
+  overflow-y: auto;
+}
+
+#historyPanel.show { display: block; }
+
+.history-title {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.history-item {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+
+.history-open {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  background: #202438;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-delete {
+  background: #a33c50;
 }
 
 #chat {
@@ -79,16 +134,6 @@ input {
   font-size: 15px;
 }
 
-button {
-  border: 0;
-  border-radius: 12px;
-  padding: 0 18px;
-  background: #7868ff;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
-
 button:disabled {
   opacity: 0.5;
 }
@@ -97,13 +142,21 @@ button:disabled {
 
 <body>
 
-<header>✦ <span>SENKO</span> AI</header>
+<header>
+  <div class="logo">✦ <span>SENKO</span> AI</div>
 
-<main id="chat">
-  <div class="msg ai">
-    haii aku senko, kamu?
+  <div class="header-buttons">
+    <button id="historyBtn">☰</button>
+    <button id="newChatBtn">＋ Chat</button>
   </div>
-</main>
+</header>
+
+<section id="historyPanel">
+  <div class="history-title">RIWAYAT PERCAKAPAN</div>
+  <div id="historyList"></div>
+</section>
+
+<main id="chat"></main>
 
 <footer>
   <input id="input" placeholder="Tanyakan sesuatu..." autocomplete="off">
@@ -114,8 +167,11 @@ button:disabled {
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
 const send = document.getElementById('send');
+const historyPanel = document.getElementById('historyPanel');
+const historyList = document.getElementById('historyList');
 
-// identitas pengguna
+const CHAT_KEY = 'senko_chats_v1';
+
 let userId = localStorage.getItem('senko_user_id');
 
 if (!userId) {
@@ -123,23 +179,166 @@ if (!userId) {
   localStorage.setItem('senko_user_id', userId);
 }
 
-// menampilkan pesan
-function add(text, type) {
-  const el = document.createElement('div');
-  el.className = 'msg ' + type;
-  el.textContent = text;
-  chat.appendChild(el);
+let conversations = [];
+
+try {
+  conversations = JSON.parse(
+    localStorage.getItem(CHAT_KEY) || '[]'
+  );
+
+  if (!Array.isArray(conversations)) {
+    conversations = [];
+  }
+} catch {
+  conversations = [];
+}
+
+let activeChatId = null;
+
+function saveChats() {
+  try {
+    localStorage.setItem(
+      CHAT_KEY,
+      JSON.stringify(conversations)
+    );
+    return true;
+  } catch (error) {
+    alert('Penyimpanan penuh atau tidak tersedia.');
+    return false;
+  }
+}
+
+function getActiveChat() {
+  return conversations.find(c => c.id === activeChatId);
+}
+
+// Membuat percakapan baru
+function newChat() {
+  const conversation = {
+    id: crypto.randomUUID(),
+    title: 'Percakapan baru',
+    updatedAt: Date.now(),
+    messages: [
+      {
+        text: 'haii aku senko, kamu?',
+        type: 'ai'
+      }
+    ]
+  };
+
+  conversations.unshift(conversation);
+  activeChatId = conversation.id;
+
+  saveChats();
+  renderMessages();
+  renderHistory();
+
+  historyPanel.classList.remove('show');
+}
+
+// Menampilkan pesan
+function renderMessages() {
+  chat.innerHTML = '';
+
+  const conversation = getActiveChat();
+  if (!conversation) return;
+
+  conversation.messages.forEach(message => {
+    const el = document.createElement('div');
+    el.className = 'msg ' + message.type;
+    el.textContent = message.text;
+    chat.appendChild(el);
+  });
+
   chat.scrollTop = chat.scrollHeight;
 }
 
-// mengirim pesan
+// Menampilkan daftar riwayat
+function renderHistory() {
+  historyList.innerHTML = '';
+
+  const sorted = [...conversations].sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  );
+
+  sorted.forEach(conversation => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+
+    const open = document.createElement('button');
+    open.className = 'history-open';
+    open.textContent = conversation.title;
+
+    open.onclick = () => {
+      activeChatId = conversation.id;
+      renderMessages();
+      historyPanel.classList.remove('show');
+    };
+
+    const remove = document.createElement('button');
+    remove.className = 'history-delete';
+    remove.textContent = '✕';
+
+    remove.onclick = () => {
+      if (!confirm('Hapus percakapan ini?')) return;
+
+      conversations = conversations.filter(
+        c => c.id !== conversation.id
+      );
+
+      saveChats();
+
+      if (activeChatId === conversation.id) {
+        activeChatId = null;
+
+        if (conversations.length) {
+          activeChatId = conversations[0].id;
+        } else {
+          newChat();
+        }
+      }
+
+      renderMessages();
+      renderHistory();
+    };
+
+    item.appendChild(open);
+    item.appendChild(remove);
+    historyList.appendChild(item);
+  });
+}
+
+// Mengirim pesan ke AI
 async function ask() {
   const message = input.value.trim();
 
   if (!message || send.disabled) return;
 
+  let conversation = getActiveChat();
+
+  if (!conversation) {
+    newChat();
+    conversation = getActiveChat();
+  }
+
+  const currentId = conversation.id;
+
   input.value = '';
-  add(message, 'user');
+
+  conversation.messages.push({
+    text: message,
+    type: 'user'
+  });
+
+  if (conversation.title === 'Percakapan baru') {
+    conversation.title = message.slice(0, 35);
+  }
+
+  conversation.updatedAt = Date.now();
+
+  saveChats();
+  renderMessages();
+  renderHistory();
 
   const loading = document.createElement('div');
   loading.className = 'msg ai';
@@ -166,23 +365,57 @@ async function ask() {
       throw new Error(data.error || 'Terjadi kesalahan');
     }
 
-    loading.textContent = data.reply;
+    conversation.messages.push({
+      text: data.reply,
+      type: 'ai'
+    });
 
   } catch (error) {
-    loading.textContent = 'Gagal: ' + error.message;
+    conversation.messages.push({
+      text: 'Gagal: ' + error.message,
+      type: 'ai'
+    });
   } finally {
+    conversation.updatedAt = Date.now();
+
+    saveChats();
+    renderHistory();
+
+    if (activeChatId === currentId) {
+      renderMessages();
+    }
+
     send.disabled = false;
     input.focus();
   }
 }
 
+// Tombol
+document.getElementById('newChatBtn')
+  .addEventListener('click', newChat);
+
+document.getElementById('historyBtn')
+  .addEventListener('click', () => {
+    historyPanel.classList.toggle('show');
+  });
+
 send.addEventListener('click', ask);
 
-input.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    ask();
-  }
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter') ask();
 });
+
+// Memuat percakapan terakhir
+if (conversations.length) {
+  activeChatId = [...conversations].sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  )[0].id;
+
+  renderMessages();
+  renderHistory();
+} else {
+  newChat();
+}
 </script>
 
 </body>

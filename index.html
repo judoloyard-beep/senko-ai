@@ -590,6 +590,7 @@ send.addEventListener('click', ask);
 input.addEventListener('keydown', e => {
   if (e.key === 'Enter') ask();
 });
+  checkLogin();
 
 if (conversations.length) {
   activeChatId = [...conversations].sort(

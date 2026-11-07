@@ -366,12 +366,23 @@ function saveChats() {
   if (!activeStorageKey) return;
 
   try {
+    // Buang Base64 gambar sebelum menyimpan riwayat
+    const lightweightChats = conversations.map(c => ({
+      ...c,
+      messages: c.messages.map(message => {
+        const { image, ...textOnly } = message;
+        return textOnly;
+      })
+    }));
+
     localStorage.setItem(
       activeStorageKey,
-      JSON.stringify(conversations)
+      JSON.stringify(lightweightChats)
     );
-  } catch {
-    alert('Penyimpanan penuh atau tidak tersedia.');
+
+  } catch (error) {
+    console.error('Penyimpanan gagal:', error);
+    alert('Penyimpanan riwayat gagal.');
   }
 }
 
@@ -563,13 +574,19 @@ function renderMessages() {
       el.appendChild(text);
     }
 
-    if (message.image) {
-      const img = document.createElement('img');
-      img.src = message.image;
-      img.className = 'msg-image';
-      img.alt = 'Gambar yang dikirim';
-      el.appendChild(img);
-    }
+    const imageSrc = message.id
+  ? temporaryImages.get(message.id)
+  : null;
+
+if (imageSrc || message.image) {
+  const img = document.createElement('img');
+
+  img.src = imageSrc || message.image;
+  img.className = 'msg-image';
+  img.alt = 'Gambar yang dikirim';
+
+  el.appendChild(img);
+}
 
     chat.appendChild(el);
   });
@@ -750,11 +767,20 @@ async function ask() {
   previewImage.src = '';
   previewArea.classList.remove('show');
 
-  conversation.messages.push({
-    text: message,
-    image: imagePreview,
-    type: 'user'
-  });
+  const userMessage = {
+  id: crypto.randomUUID(),
+  text: message,
+  type: 'user'
+};
+
+if (imagePreview) {
+  temporaryImages.set(
+    userMessage.id,
+    imagePreview
+  );
+}
+
+conversation.messages.push(userMessage);
 
   if (conversation.title === 'Percakapan baru') {
     conversation.title =

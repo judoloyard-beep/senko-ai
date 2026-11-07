@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     "image/webp"
   ];
 
-  const MAX_IMAGE_BASE64 = 3600000;
+  const MAX_IMAGE_BASE64 = 12000000;
 
   // Fungsi mengirim teks atau gambar ke Gemini
   async function askGemini(prompt, systemPrompt, json = false, image = null) {

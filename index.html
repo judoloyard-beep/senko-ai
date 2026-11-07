@@ -229,6 +229,26 @@ const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
+  let currentUser = null;
+
+async function checkLogin() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    console.error(error.message);
+    return;
+  }
+
+  currentUser = data.session?.user || null;
+  updateImageAccess();
+}
+
+function updateImageAccess() {
+  imageBtn.disabled = !currentUser;
+  imageBtn.title = currentUser
+    ? 'Kirim gambar'
+    : 'Login untuk mengirim gambar';
+  }
 
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
@@ -374,6 +394,7 @@ function renderHistory() {
         activeChatId = null;
 
         if (conversations.length) {
+          checkLogin();
           activeChatId = conversations[0].id;
         } else {
           newChat();

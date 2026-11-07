@@ -68,7 +68,7 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       throw new Error(
-        data.error?.message || "Gemini gagal merespons"
+        data.error?.message || "males ah"
       );
     }
 
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
       .trim();
 
     if (!reply) {
-      throw new Error("Gemini tidak memberikan jawaban.");
+      throw new Error("apasie");
     }
 
     return reply;

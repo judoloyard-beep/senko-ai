@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Senko Ai</title>
+<title>Senko AI</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -29,11 +29,7 @@ header {
   gap: 8px;
 }
 
-.logo {
-  font-size: 21px;
-  font-weight: bold;
-}
-
+.logo { font-size: 21px; font-weight: bold; }
 .logo span { color: #8b7cff; }
 
 .header-buttons {
@@ -49,6 +45,36 @@ button {
   color: white;
   font-weight: bold;
   cursor: pointer;
+}
+
+button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+#accountPanel {
+  display: none;
+  padding: 15px;
+  background: #121522;
+  border-bottom: 1px solid #25283a;
+}
+
+#accountPanel.show { display: block; }
+
+#accountPanel input {
+  width: 100%;
+  margin: 5px 0;
+  padding: 12px;
+  border-radius: 9px;
+  border: 1px solid #34384c;
+  background: #1c2030;
+  color: white;
+}
+
+#authMessage {
+  color: #c2baff;
+  font-size: 13px;
+  margin-top: 8px;
 }
 
 #historyPanel {
@@ -170,10 +196,6 @@ footer {
   background: #a33c50;
   margin-left: 10px;
 }
-
-button:disabled {
-  opacity: 0.5;
-}
 </style>
 </head>
 
@@ -183,10 +205,39 @@ button:disabled {
   <div class="logo">✦ <span>SENKO</span>POKE</div>
 
   <div class="header-buttons">
+    <button id="accountBtn">Akun</button>
     <button id="historyBtn">☰</button>
     <button id="newChatBtn">＋ Chat</button>
   </div>
 </header>
+
+<section id="accountPanel">
+  <div id="accountStatus">Belum login</div>
+
+  <div id="authForm">
+    <input id="usernameInput"
+      placeholder="Username (untuk daftar)">
+
+    <input id="emailInput"
+      type="email"
+      placeholder="Email">
+
+    <input id="passwordInput"
+      type="password"
+      placeholder="Password minimal 6 karakter">
+
+    <div class="header-buttons">
+      <button id="registerBtn">Daftar</button>
+      <button id="loginBtn">Login</button>
+    </div>
+  </div>
+
+  <button id="logoutBtn" style="display:none;background:#a33c50">
+    Logout
+  </button>
+
+  <div id="authMessage"></div>
+</section>
 
 <section id="historyPanel">
   <div class="history-title">RIWAYAT YAPPINGANMU</div>
@@ -201,16 +252,14 @@ button:disabled {
 </div>
 
 <footer>
-  <button id="imageBtn" type="button">📎</button>
+  <button id="imageBtn" type="button" disabled>📎</button>
 
   <input id="imageInput" type="file"
-    accept="image/jpeg,image/png,image/webp"
-    hidden>
+    accept="image/jpeg,image/png,image/webp" hidden>
 
   <input id="cameraInput" type="file"
     accept="image/jpeg,image/png,image/webp"
-    capture="environment"
-    hidden>
+    capture="environment" hidden>
 
   <input id="input"
     placeholder="Ketik sini lawak"
@@ -222,85 +271,94 @@ button:disabled {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const SUPABASE_URL = 'https://mtgfciwnuxaxbjoencvg.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_DLnbdI8iZt9uqGcUwViHMw_o-8XSjPi';
+const SUPABASE_URL =
+  'https://mtgfciwnuxaxbjoencvg.supabase.co';
+
+const SUPABASE_KEY =
+  'sb_publishable_DLnbdI8iZt9uqGcUwViHMw_o-8XSjPi';
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
-  let currentUser = null;
 
-async function checkLogin() {
-  const { data, error } = await supabaseClient.auth.getSession();
-
-  if (error) {
-    console.error(error.message);
-    return;
-  }
-
-  currentUser = data.session?.user || null;
-  updateImageAccess();
-}
-
-function updateImageAccess() {
-  imageBtn.disabled = !currentUser;
-  imageBtn.title = currentUser
-    ? 'Kirim gambar'
-    : 'Login untuk mengirim gambar';
-  }
-
+// ELEMENT
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
 const send = document.getElementById('send');
-const historyPanel = document.getElementById('historyPanel');
-const historyList = document.getElementById('historyList');
 
 const imageBtn = document.getElementById('imageBtn');
 const imageInput = document.getElementById('imageInput');
 const cameraInput = document.getElementById('cameraInput');
+
 const previewArea = document.getElementById('previewArea');
 const previewImage = document.getElementById('previewImage');
 const removeImage = document.getElementById('removeImage');
 
-const CHAT_KEY = 'senko_chats_v1';
+const historyPanel = document.getElementById('historyPanel');
+const historyList = document.getElementById('historyList');
+
+const accountPanel = document.getElementById('accountPanel');
+const accountStatus = document.getElementById('accountStatus');
+const authMessage = document.getElementById('authMessage');
+
+const usernameInput = document.getElementById('usernameInput');
+const emailInput = document.getElementById('emailInput');
+const passwordInput = document.getElementById('passwordInput');
+
+const authForm = document.getElementById('authForm');
+const logoutBtn = document.getElementById('logoutBtn');
+
+let currentUser = null;
+let authReady = false;
 
 let selectedImage = null;
 let selectedMimeType = null;
 
-let userId = localStorage.getItem('senko_user_id');
-
-if (!userId) {
-  userId = crypto.randomUUID();
-  localStorage.setItem('senko_user_id', userId);
-}
-
 let conversations = [];
+let activeChatId = null;
+let activeStorageKey = null;
 
-try {
-  conversations = JSON.parse(
-    localStorage.getItem(CHAT_KEY) || '[]'
-  );
+// RIWAYAT TERPISAH UNTUK TAMU DAN SETIAP AKUN
+function loadChats() {
+  activeStorageKey = currentUser
+    ? 'senko_chats_user_' + currentUser.id
+    : 'senko_chats_guest';
 
-  if (!Array.isArray(conversations)) {
+  try {
+    conversations = JSON.parse(
+      localStorage.getItem(activeStorageKey) || '[]'
+    );
+
+    if (!Array.isArray(conversations)) {
+      conversations = [];
+    }
+  } catch {
     conversations = [];
   }
-} catch {
-  conversations = [];
+
+  activeChatId = null;
+
+  if (conversations.length) {
+    conversations.sort((a, b) => b.updatedAt - a.updatedAt);
+    activeChatId = conversations[0].id;
+    renderMessages();
+    renderHistory();
+  } else {
+    newChat();
+  }
 }
 
-let activeChatId = null;
-
 function saveChats() {
+  if (!activeStorageKey) return;
+
   try {
     localStorage.setItem(
-      CHAT_KEY,
+      activeStorageKey,
       JSON.stringify(conversations)
     );
-    return true;
   } catch {
     alert('Penyimpanan penuh atau tidak tersedia.');
-    return false;
   }
 }
 
@@ -308,6 +366,151 @@ function getActiveChat() {
   return conversations.find(c => c.id === activeChatId);
 }
 
+// STATUS LOGIN
+function updateAuthUI() {
+  imageBtn.disabled = !currentUser;
+
+  if (currentUser) {
+    accountStatus.textContent =
+      'Login sebagai: ' + currentUser.email;
+
+    authForm.style.display = 'none';
+    logoutBtn.style.display = 'inline-block';
+  } else {
+    accountStatus.textContent = 'Kamu sedang menggunakan mode tamu';
+
+    authForm.style.display = 'block';
+    logoutBtn.style.display = 'none';
+  }
+}
+
+async function checkLogin() {
+  const { data, error } =
+    await supabaseClient.auth.getSession();
+
+  if (error) {
+    authMessage.textContent = error.message;
+  }
+
+  currentUser = data?.session?.user || null;
+  authReady = true;
+
+  updateAuthUI();
+  loadChats();
+}
+
+// DAFTAR AKUN
+async function registerAccount() {
+  const username = usernameInput.value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!username || !email || !password) {
+    authMessage.textContent =
+      'Isi username, email, dan password dahulu.';
+    return;
+  }
+
+  if (password.length < 6) {
+    authMessage.textContent =
+      'Password minimal 6 karakter.';
+    return;
+  }
+
+  authMessage.textContent = 'Sedang membuat akun...';
+
+  const { data, error } =
+    await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username }
+      }
+    });
+
+  if (error) {
+    authMessage.textContent = error.message;
+    return;
+  }
+
+  if (data.session) {
+    currentUser = data.session.user;
+    updateAuthUI();
+    loadChats();
+
+    authMessage.textContent = 'Akun berhasil dibuat!';
+  } else {
+    authMessage.textContent =
+      'Pendaftaran berhasil. Periksa email untuk verifikasi sebelum login.';
+  }
+}
+
+// LOGIN
+async function loginAccount() {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!email || !password) {
+    authMessage.textContent =
+      'Masukkan email dan password.';
+    return;
+  }
+
+  authMessage.textContent = 'Sedang login...';
+
+  const { data, error } =
+    await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+  if (error) {
+    authMessage.textContent = error.message;
+    return;
+  }
+
+  currentUser = data.user;
+  updateAuthUI();
+  loadChats();
+
+  authMessage.textContent = 'Login berhasil!';
+}
+
+// LOGOUT
+async function logoutAccount() {
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    authMessage.textContent = error.message;
+    return;
+  }
+
+  currentUser = null;
+  selectedImage = null;
+  selectedMimeType = null;
+
+  previewImage.src = '';
+  previewArea.classList.remove('show');
+
+  updateAuthUI();
+  loadChats();
+
+  authMessage.textContent = 'Kamu sudah logout.';
+}
+
+// PERUBAHAN STATUS AUTENTIKASI
+supabaseClient.auth.onAuthStateChange(
+  (event, session) => {
+    if (event === 'INITIAL_SESSION') return;
+
+    currentUser = session?.user || null;
+
+    updateAuthUI();
+    loadChats();
+  }
+);
+
+// CHAT
 function newChat() {
   const conversation = {
     id: crypto.randomUUID(),
@@ -359,62 +562,62 @@ function renderMessages() {
 function renderHistory() {
   historyList.innerHTML = '';
 
-  const sorted = [...conversations].sort(
-    (a, b) => b.updatedAt - a.updatedAt
-  );
+  [...conversations]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .forEach(conversation => {
+      const item = document.createElement('div');
+      item.className = 'history-item';
 
-  sorted.forEach(conversation => {
-    const item = document.createElement('div');
-    item.className = 'history-item';
+      const open = document.createElement('button');
+      open.className = 'history-open';
+      open.textContent = conversation.title;
 
-    const open = document.createElement('button');
-    open.className = 'history-open';
-    open.textContent = conversation.title;
+      open.onclick = () => {
+        activeChatId = conversation.id;
+        renderMessages();
+        historyPanel.classList.remove('show');
+      };
 
-    open.onclick = () => {
-      activeChatId = conversation.id;
-      renderMessages();
-      historyPanel.classList.remove('show');
-    };
+      const remove = document.createElement('button');
+      remove.className = 'history-delete';
+      remove.textContent = '✕';
 
-    const remove = document.createElement('button');
-    remove.className = 'history-delete';
-    remove.textContent = '✕';
+      remove.onclick = () => {
+        if (!confirm('Hapus percakapan ini?')) return;
 
-    remove.onclick = () => {
-      if (!confirm('Hapus percakapan ini?')) return;
+        conversations = conversations.filter(
+          c => c.id !== conversation.id
+        );
 
-      conversations = conversations.filter(
-        c => c.id !== conversation.id
-      );
-
-      saveChats();
-
-      if (activeChatId === conversation.id) {
-        activeChatId = null;
-
-        if (conversations.length) {
-          checkLogin();
-          activeChatId = conversations[0].id;
-        } else {
-          newChat();
+        if (activeChatId === conversation.id) {
+          activeChatId = conversations[0]?.id || null;
         }
-      }
 
-      renderMessages();
-      renderHistory();
-    };
+        saveChats();
 
-    item.appendChild(open);
-    item.appendChild(remove);
-    historyList.appendChild(item);
-  });
+        if (!activeChatId) {
+          newChat();
+        } else {
+          renderMessages();
+          renderHistory();
+        }
+      };
+
+      item.appendChild(open);
+      item.appendChild(remove);
+      historyList.appendChild(item);
+    });
 }
 
-// Pilihan galeri atau kamera
+// GAMBAR
 imageBtn.addEventListener('click', () => {
+  if (!currentUser) {
+    alert('Login dahulu untuk menggunakan fitur gambar.');
+    return;
+  }
+
   const choice = confirm(
-    'pilih OK ya buat buka galeri lu. pilih Batal buat lu ngaca.'
+    'OK untuk membuka galeri. Batal untuk membuka kamera.'
   );
 
   if (choice) {
@@ -424,8 +627,12 @@ imageBtn.addEventListener('click', () => {
   }
 });
 
-// Memproses gambar
 function handleImage(file) {
+  if (!currentUser) {
+    alert('Login dahulu untuk mengirim gambar.');
+    return;
+  }
+
   if (!file) return;
 
   const allowedTypes = [
@@ -476,11 +683,18 @@ removeImage.addEventListener('click', () => {
   previewArea.classList.remove('show');
 });
 
-// Mengirim pesan dan gambar ke AI
+// KIRIM PESAN
 async function ask() {
+  if (!authReady || send.disabled) return;
+
   const message = input.value.trim();
 
-  if ((!message && !selectedImage) || send.disabled) return;
+  if ((!message && !selectedImage)) return;
+
+  if (selectedImage && !currentUser) {
+    alert('Login dahulu untuk mengirim gambar.');
+    return;
+  }
 
   let conversation = getActiveChat();
 
@@ -492,6 +706,7 @@ async function ask() {
   const currentId = conversation.id;
   const imageToSend = selectedImage;
   const mimeToSend = selectedMimeType;
+
   const imagePreview = imageToSend
     ? `data:${mimeToSend};base64,${imageToSend}`
     : null;
@@ -499,6 +714,7 @@ async function ask() {
   input.value = '';
   selectedImage = null;
   selectedMimeType = null;
+
   previewImage.src = '';
   previewArea.classList.remove('show');
 
@@ -509,7 +725,8 @@ async function ask() {
   });
 
   if (conversation.title === 'Percakapan baru') {
-    conversation.title = (message || 'Gambar').slice(0, 35);
+    conversation.title =
+      (message || 'Gambar').slice(0, 35);
   }
 
   conversation.updatedAt = Date.now();
@@ -518,25 +735,39 @@ async function ask() {
   renderMessages();
   renderHistory();
 
+  send.disabled = true;
+
   const loading = document.createElement('div');
   loading.className = 'msg ai';
-  loading.textContent = 'mengetik..';
+  loading.textContent = 'mengetik...';
 
   if (activeChatId === currentId) {
     chat.appendChild(loading);
   }
 
-  send.disabled = true;
-
   try {
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+
+    // Token akun dikirim untuk pemeriksaan backend.
+    if (currentUser) {
+      const { data } =
+        await supabaseClient.auth.getSession();
+
+      const token = data.session?.access_token;
+
+      if (token) {
+        headers.Authorization = 'Bearer ' + token;
+      }
+    }
+
     const res = await fetch('/api/chat', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers,
       body: JSON.stringify({
-        message: message,
-        userId: userId,
+        message,
+        userId: currentUser?.id || 'guest',
         image: imageToSend
           ? {
               mimeType: mimeToSend,
@@ -577,6 +808,20 @@ async function ask() {
   }
 }
 
+// TOMBOL
+document.getElementById('accountBtn')
+  .addEventListener('click', () => {
+    accountPanel.classList.toggle('show');
+  });
+
+document.getElementById('registerBtn')
+  .addEventListener('click', registerAccount);
+
+document.getElementById('loginBtn')
+  .addEventListener('click', loginAccount);
+
+logoutBtn.addEventListener('click', logoutAccount);
+
 document.getElementById('newChatBtn')
   .addEventListener('click', newChat);
 
@@ -590,18 +835,9 @@ send.addEventListener('click', ask);
 input.addEventListener('keydown', e => {
   if (e.key === 'Enter') ask();
 });
-  checkLogin();
 
-if (conversations.length) {
-  activeChatId = [...conversations].sort(
-    (a, b) => b.updatedAt - a.updatedAt
-  )[0].id;
-
-  renderMessages();
-  renderHistory();
-} else {
-  newChat();
-}
+// MULAI APLIKASI
+checkLogin();
 </script>
 
 </body>

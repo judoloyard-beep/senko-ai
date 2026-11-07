@@ -324,6 +324,9 @@ if (
 
 let selectedImage = null;
 let selectedMimeType = null;
+  
+  // Gambar hanya disimpan sementara selama halaman aktif
+const temporaryImages = new Map();
 
 let conversations = [];
 let activeChatId = null;

@@ -219,7 +219,17 @@ button:disabled {
   <button id="send">Kirim rek</button>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
+const SUPABASE_URL = 'https://mtgfciwnuxaxbjoencvg.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_DLnbdI8iZt9uqGcUwViHMw_o-8XSjPi';
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
 const chat = document.getElementById('chat');
 const input = document.getElementById('input');
 const send = document.getElementById('send');

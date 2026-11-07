@@ -162,7 +162,7 @@ export default async function handler(req, res) {
     const memoryUrl =
       `${SUPABASE_URL}/rest/v1/user_memories?select=memory` +
       `&user_id=eq.${encodeURIComponent(userId)}` +
-      `&order=created_at.desc&limit=30`;
+      `&order=created_at.desc&limit=8`;
 
     const memoryResponse = await fetch(memoryUrl, {
       headers: dbHeaders
@@ -185,8 +185,11 @@ export default async function handler(req, res) {
     const memories = await memoryResponse.json();
 
     const memoryText = memories.length
-      ? memories.map(item => "- " + item.memory).join("\n")
-      : "Belum ada memori.";
+  ? memories
+      .map(item => "- " + String(item.memory || "").slice(0, 300))
+      .join("\n")
+      .slice(0, 3000)
+  : "Belum ada memori.";
 
     // 2. Kepribadian Senko
     const systemPrompt = `Namamu Senko AI.

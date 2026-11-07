@@ -311,6 +311,12 @@ const logoutBtn = document.getElementById('logoutBtn');
 
 let currentUser = null;
 let authReady = false;
+  let guestId = localStorage.getItem('senko_user_id');
+
+if (!guestId) {
+  guestId = crypto.randomUUID();
+  localStorage.setItem('senko_user_id', guestId);
+}
 
 let selectedImage = null;
 let selectedMimeType = null;
@@ -767,7 +773,7 @@ async function ask() {
       headers,
       body: JSON.stringify({
         message,
-        userId: currentUser?.id || 'guest',
+        userId: currentUser?.id || 'guestId',
         image: imageToSend
           ? {
               mimeType: mimeToSend,

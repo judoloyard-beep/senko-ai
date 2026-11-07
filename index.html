@@ -773,7 +773,7 @@ async function ask() {
       headers,
       body: JSON.stringify({
         message,
-        userId: currentUser?.id || 'guestId',
+        userId: currentUser?.id || guestId,
         image: imageToSend
           ? {
               mimeType: mimeToSend,

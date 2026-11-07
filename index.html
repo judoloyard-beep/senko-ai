@@ -313,7 +313,10 @@ let currentUser = null;
 let authReady = false;
   let guestId = localStorage.getItem('senko_user_id');
 
-if (!guestId) {
+if (
+  !guestId ||
+  !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)
+) {
   guestId = crypto.randomUUID();
   localStorage.setItem('senko_user_id', guestId);
 }

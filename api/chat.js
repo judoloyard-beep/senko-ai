@@ -56,7 +56,7 @@ export default async function handler(req, res) {
         }],
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 512,
+          maxOutputTokens: 2048,
           ...(json
             ? { responseMimeType: "application/json" }
             : {})
@@ -290,7 +290,7 @@ try {
     // Tidak mengambil fakta dari isi gambar.
     let newMemories = [];
 
-    if (message.trim()) {
+    if (message.trim() && message.length <= 4000 && !image) {
       const extractionPrompt = `
 Pesan teks terbaru pengguna:
 ${message}

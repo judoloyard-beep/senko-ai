@@ -174,6 +174,7 @@ footer {
   background: #292d43;
   font-size: 18px;
   padding: 12px;
+  opacity: 1;
 }
 
 #previewArea {
@@ -377,7 +378,7 @@ function getActiveChat() {
 
 // STATUS LOGIN
 function updateAuthUI() {
-  imageBtn.disabled = !currentUser;
+  imageBtn.disabled = false;
 
   if (currentUser) {
     accountStatus.textContent =
@@ -385,11 +386,16 @@ function updateAuthUI() {
 
     authForm.style.display = 'none';
     logoutBtn.style.display = 'inline-block';
+
+    imageBtn.title = 'Kirim gambar';
   } else {
-    accountStatus.textContent = 'Kamu sedang menggunakan mode tamu';
+    accountStatus.textContent =
+      'Kamu sedang menggunakan mode tamu';
 
     authForm.style.display = 'block';
     logoutBtn.style.display = 'none';
+
+    imageBtn.title = 'Login untuk mengirim gambar';
   }
 }
 
@@ -620,13 +626,27 @@ function renderHistory() {
 
 // GAMBAR
 imageBtn.addEventListener('click', () => {
+  if (!authReady) {
+    alert('Sedang memeriksa akun. Tunggu sebentar ya!');
+    return;
+  }
+
   if (!currentUser) {
-    alert('Login dahulu untuk menggunakan fitur gambar.');
+    alert(
+      '🔒 FITUR GAMBAR TERKUNCI\n\n' +
+      'Untuk mengirim gambar, kamu harus login terlebih dahulu.\n\n' +
+      'Silakan buka menu Akun dan login atau daftar akun Senko AI.'
+    );
+
+    accountPanel.classList.add('show');
+
     return;
   }
 
   const choice = confirm(
-    'OK untuk membuka galeri. Batal untuk membuka kamera.'
+    'Pilih sumber gambar:\n\n' +
+    'OK = Galeri\n' +
+    'Batal = Kamera'
   );
 
   if (choice) {

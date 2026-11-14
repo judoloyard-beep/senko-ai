@@ -1,44 +1,34 @@
+HTML
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <link rel="stylesheet"
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0d14">
+<title>Senko AI</title>
+
+<link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
 
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Senko AI</title>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
   background: #0b0d14;
-  color: white;
+  color: #fff;
   font-family: Arial, sans-serif;
   height: 100dvh;
   display: flex;
   flex-direction: column;
-}
-
-header {
-  padding: 15px;
-  background: #121522;
-  border-bottom: 1px solid #25283a;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.logo { font-size: 21px; font-weight: bold; }
-.logo span { color: #8b7cff; }
-
-.header-buttons {
-  display: flex;
-  gap: 7px;
 }
 
 button {
@@ -56,57 +46,90 @@ button:disabled {
   cursor: not-allowed;
 }
 
-#accountPanel {
+header {
+  padding: 13px;
+  background: #121522;
+  border-bottom: 1px solid #25283a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.logo span {
+  color: #9889ff;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.header-buttons button {
+  padding: 10px;
+  font-size: 12px;
+}
+
+#accountPanel,
+#historyPanel {
   display: none;
-  padding: 15px;
+  padding: 14px;
   background: #121522;
   border-bottom: 1px solid #25283a;
 }
 
-#accountPanel.show { display: block; }
+#accountPanel.show,
+#historyPanel.show {
+  display: block;
+}
 
 #accountPanel input {
   width: 100%;
-  margin: 5px 0;
   padding: 12px;
-  border-radius: 9px;
-  border: 1px solid #34384c;
+  margin: 5px 0;
   background: #1c2030;
+  border: 1px solid #34384c;
+  border-radius: 9px;
   color: white;
+}
+
+#accountStatus {
+  margin-bottom: 10px;
+  color: #c2baff;
+  font-size: 13px;
 }
 
 #authMessage {
   color: #c2baff;
   font-size: 13px;
-  margin-top: 8px;
+  margin-top: 9px;
 }
 
 #historyPanel {
-  display: none;
-  background: #121522;
-  border-bottom: 1px solid #25283a;
-  padding: 12px;
   max-height: 230px;
   overflow-y: auto;
 }
 
-#historyPanel.show { display: block; }
-
 .history-title {
-  font-size: 13px;
   color: #aaa;
+  font-size: 12px;
   margin-bottom: 10px;
 }
 
 .history-item {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   margin-bottom: 7px;
 }
 
 .history-open {
   flex: 1;
-  min-width: 0;
   text-align: left;
   background: #202438;
   overflow: hidden;
@@ -114,23 +137,40 @@ button:disabled {
   white-space: nowrap;
 }
 
-.history-delete { background: #a33c50; }
+.history-delete {
+  background: #a33c50;
+}
 
 #chat {
   flex: 1;
   overflow-y: auto;
-  padding: 20px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 14px;
+  scroll-behavior: smooth;
+}
+
+.welcome {
+  margin: auto;
+  text-align: center;
+  color: #aaa;
+  max-width: 290px;
+}
+
+.welcome h2 {
+  color: white;
+}
+
+.welcome span {
+  color: #9585ff;
 }
 
 .msg {
-  padding: 13px 16px;
+  padding: 13px 15px;
   border-radius: 15px;
-  max-width: 85%;
-  line-height: 1.5;
-  white-space: pre-wrap;
+  max-width: 92%;
+  line-height: 1.6;
   overflow-wrap: anywhere;
 }
 
@@ -144,62 +184,126 @@ button:disabled {
   align-self: flex-start;
 }
 
+.msg-content p {
+  margin: 4px 0 12px;
+}
+
+.msg-content ul,
+.msg-content ol {
+  padding-left: 22px;
+}
+
+.msg-content pre {
+  background: #080a10;
+  padding: 12px;
+  border-radius: 10px;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.msg-content pre code {
+  font-size: 13px;
+  white-space: pre;
+}
+
+.msg-content :not(pre) > code {
+  background: #292d43;
+  padding: 3px 6px;
+  border-radius: 5px;
+}
+
 .msg-image {
   display: block;
-  max-width: 210px;
-  max-height: 210px;
-  width: auto;
-  height: auto;
+  max-width: 230px;
+  max-height: 230px;
   object-fit: contain;
   border-radius: 10px;
   margin-top: 8px;
 }
 
-footer {
-  padding: 12px;
+.typing {
+  color: #aaa;
+  font-size: 13px;
+  animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse {
+  to { opacity: .4; }
+}
+
+#previewArea {
+  display: none;
+  padding: 10px;
+  background: #121522;
+  align-items: center;
+  gap: 10px;
+}
+
+#previewArea.show {
   display: flex;
-  gap: 8px;
+}
+
+#previewImage {
+  width: 65px;
+  height: 65px;
+  object-fit: cover;
+  border-radius: 9px;
+}
+
+#removeImage {
+  background: #a33c50;
+}
+
+footer {
+  padding: 10px;
+  display: flex;
+  gap: 7px;
   align-items: center;
   background: #121522;
+  border-top: 1px solid #25283a;
 }
 
 #input {
   flex: 1;
   min-width: 0;
-  padding: 14px;
-  border-radius: 12px;
+  padding: 13px;
+  border-radius: 11px;
   border: 1px solid #34384c;
   background: #1c2030;
   color: white;
   font-size: 15px;
+  outline: none;
+}
+
+#input:focus {
+  border-color: #7868ff;
 }
 
 #imageBtn {
   background: #292d43;
   font-size: 18px;
+  padding: 11px;
+}
+
+#send {
   padding: 12px;
-  opacity: 1;
 }
 
-#previewArea {
-  display: none;
-  padding: 10px 15px;
-  background: #121522;
-  border-top: 1px solid #25283a;
-}
-
-#previewArea.show { display: flex; }
-
-#previewImage {
-  width: 75px;
-  height: 75px;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-#removeImage {
+#logoutBtn {
   background: #a33c50;
-  margin-left: 10px;
+}
+
+.small-note {
+  color: #888;
+  font-size: 11px;
+  text-align: center;
+  padding: 5px;
+}
+
+@media (max-width: 380px) {
+  .logo { font-size: 16px; }
+  .header-buttons button { padding: 9px 7px; }
+  #chat { padding: 10px; }
 }
 </style>
 </head>
@@ -217,19 +321,22 @@ footer {
 </header>
 
 <section id="accountPanel">
-  <div id="accountStatus">Belum login</div>
+  <div id="accountStatus">Memeriksa akun...</div>
 
   <div id="authForm">
     <input id="usernameInput"
-      placeholder="Username (untuk daftar)">
+      placeholder="Username"
+      autocomplete="username">
 
     <input id="emailInput"
       type="email"
-      placeholder="Email">
+      placeholder="Email"
+      autocomplete="email">
 
     <input id="passwordInput"
       type="password"
-      placeholder="Password minimal 6 karakter">
+      placeholder="Password minimal 6 karakter"
+      autocomplete="current-password">
 
     <div class="header-buttons">
       <button id="registerBtn">Daftar</button>
@@ -237,7 +344,7 @@ footer {
     </div>
   </div>
 
-  <button id="logoutBtn" style="display:none;background:#a33c50">
+  <button id="logoutBtn" style="display:none">
     Logout
   </button>
 
@@ -249,7 +356,12 @@ footer {
   <div id="historyList"></div>
 </section>
 
-<main id="chat"></main>
+<main id="chat">
+  <div class="welcome">
+    <h2>✦ SENKO <span>AI</span></h2>
+    <p>halo kaka! ada yang bisa senko bantu?</p>
+  </div>
+</main>
 
 <div id="previewArea">
   <img id="previewImage" alt="Preview gambar">
@@ -257,200 +369,390 @@ footer {
 </div>
 
 <footer>
-  <button id="imageBtn" type="button" disabled>📎</button>
+  <button id="imageBtn" disabled>📎</button>
 
-  <input id="imageInput" type="file"
-    accept="image/jpeg,image/png,image/webp" hidden>
-
-  <input id="cameraInput" type="file"
+  <input id="imageInput"
+    type="file"
     accept="image/jpeg,image/png,image/webp"
-    capture="environment" hidden>
+    hidden>
+
+  <input id="cameraInput"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    capture="environment"
+    hidden>
 
   <input id="input"
-    placeholder="Ketik disini"
+    placeholder="Ketik pesan..."
     autocomplete="off">
 
   <button id="send">Kirim</button>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<div class="small-note">
+  Senko AI • Your personal AI assistant
+</div>
 
 <script>
 const SUPABASE_URL =
-  'https://mtgfciwnuxaxbjoencvg.supabase.co';
+  "https://mtgfciwnuxaxbjoencvg.supabase.co";
 
 const SUPABASE_KEY =
-  'sb_publishable_DLnbdI8iZt9uqGcUwViHMw_o-8XSjPi';
+  "sb_publishable_DLnbdI8iZt9uqGcUwViHMw_o-8XSjPi";
 
 const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_KEY
 );
 
-// ELEMENT
-const chat = document.getElementById('chat');
-const input = document.getElementById('input');
-const send = document.getElementById('send');
+// ==================================
+// ELEMENTS
+// ==================================
 
-const imageBtn = document.getElementById('imageBtn');
-const imageInput = document.getElementById('imageInput');
-const cameraInput = document.getElementById('cameraInput');
+const $ = id => document.getElementById(id);
 
-const previewArea = document.getElementById('previewArea');
-const previewImage = document.getElementById('previewImage');
-const removeImage = document.getElementById('removeImage');
+const chat = $("chat");
+const input = $("input");
+const send = $("send");
 
-const historyPanel = document.getElementById('historyPanel');
-const historyList = document.getElementById('historyList');
+const accountPanel = $("accountPanel");
+const historyPanel = $("historyPanel");
 
-const accountPanel = document.getElementById('accountPanel');
-const accountStatus = document.getElementById('accountStatus');
-const authMessage = document.getElementById('authMessage');
+const accountStatus = $("accountStatus");
+const authMessage = $("authMessage");
+const authForm = $("authForm");
+const logoutBtn = $("logoutBtn");
 
-const usernameInput = document.getElementById('usernameInput');
-const emailInput = document.getElementById('emailInput');
-const passwordInput = document.getElementById('passwordInput');
+const imageBtn = $("imageBtn");
+const imageInput = $("imageInput");
+const cameraInput = $("cameraInput");
 
-const authForm = document.getElementById('authForm');
-const logoutBtn = document.getElementById('logoutBtn');
+const previewArea = $("previewArea");
+const previewImage = $("previewImage");
+
+const historyList = $("historyList");
+
+// ==================================
+// STATE
+// ==================================
 
 let currentUser = null;
 let authReady = false;
-  let guestId = localStorage.getItem('senko_user_id');
-
-if (
-  !guestId ||
-  !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guestId)
-) {
-  guestId = crypto.randomUUID();
-  localStorage.setItem('senko_user_id', guestId);
-}
 
 let selectedImage = null;
 let selectedMimeType = null;
-  
-  // Gambar hanya disimpan sementara selama halaman aktif
-const temporaryImages = new Map();
 
 let conversations = [];
 let activeChatId = null;
 let activeStorageKey = null;
 
-// RIWAYAT TERPISAH UNTUK TAMU DAN SETIAP AKUN
-function loadChats() {
-  activeStorageKey = currentUser
-    ? 'senko_chats_user_' + currentUser.id
-    : 'senko_chats_guest';
+let sending = false;
 
-  try {
-    conversations = JSON.parse(
-      localStorage.getItem(activeStorageKey) || '[]'
-    );
+const temporaryImages = new Map();
 
-    if (!Array.isArray(conversations)) {
-      conversations = [];
-    }
-  } catch {
-    conversations = [];
-  }
+let guestId = localStorage.getItem("senko_user_id");
 
-  activeChatId = null;
+if (!guestId ||
+    !/^[0-9a-f-]{36}$/i.test(guestId)) {
+  guestId = crypto.randomUUID();
+  localStorage.setItem("senko_user_id", guestId);
+}
 
-  if (conversations.length) {
-    conversations.sort((a, b) => b.updatedAt - a.updatedAt);
-    activeChatId = conversations[0].id;
-    renderMessages();
-    renderHistory();
-  } else {
-    newChat();
-  }
+// ==================================
+// STORAGE
+// ==================================
+
+function getActiveChat() {
+  return conversations.find(
+    item => item.id === activeChatId
+  );
 }
 
 function saveChats() {
   if (!activeStorageKey) return;
 
   try {
-    // Buang Base64 gambar sebelum menyimpan riwayat
-    const lightweightChats = conversations.map(c => ({
+    const lightweight = conversations.map(c => ({
       ...c,
-      messages: c.messages.map(message => {
-        const { image, ...textOnly } = message;
-        return textOnly;
-      })
+      messages: c.messages.map(m => ({
+        id: m.id,
+        type: m.type,
+        text: m.text || ""
+      }))
     }));
 
     localStorage.setItem(
       activeStorageKey,
-      JSON.stringify(lightweightChats)
+      JSON.stringify(lightweight)
     );
 
   } catch (error) {
-    console.error('Penyimpanan gagal:', error);
-    alert('Penyimpanan riwayat gagal.');
+    console.error("Storage:", error);
+    authMessage.textContent =
+      "Penyimpanan riwayat gagal.";
   }
 }
 
-function getActiveChat() {
-  return conversations.find(c => c.id === activeChatId);
+function loadChats() {
+  activeStorageKey = currentUser
+    ? "senko_chats_user_" + currentUser.id
+    : "senko_chats_guest";
+
+  try {
+    const stored = JSON.parse(
+      localStorage.getItem(activeStorageKey) || "[]"
+    );
+
+    conversations = Array.isArray(stored)
+      ? stored
+      : [];
+
+  } catch {
+    conversations = [];
+  }
+
+  conversations.sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  );
+
+  activeChatId = conversations[0]?.id || null;
+
+  if (!activeChatId) {
+    createNewChat();
+  } else {
+    renderMessages();
+    renderHistory();
+  }
 }
 
-// STATUS LOGIN
+// ==================================
+// CHAT MANAGEMENT
+// ==================================
+
+function createNewChat() {
+  const conversation = {
+    id: crypto.randomUUID(),
+    title: "Percakapan baru",
+    updatedAt: Date.now(),
+    messages: []
+  };
+
+  conversations.unshift(conversation);
+  activeChatId = conversation.id;
+
+  saveChats();
+  renderMessages();
+  renderHistory();
+
+  historyPanel.classList.remove("show");
+}
+
+function renderMessages() {
+  chat.innerHTML = "";
+
+  const conversation = getActiveChat();
+
+  if (!conversation) return;
+
+  if (!conversation.messages.length) {
+    const welcome = document.createElement("div");
+    welcome.className = "welcome";
+    welcome.innerHTML =
+      "<h2>✦ SENKO <span>AI</span></h2>" +
+      "<p>halo kaka! ada yang bisa senko bantu?</p>";
+
+    chat.appendChild(welcome);
+    return;
+  }
+
+  conversation.messages.forEach(message => {
+    const el = document.createElement("div");
+    el.className = "msg " + message.type;
+
+    if (message.text) {
+      const content = document.createElement("div");
+      content.className = "msg-content";
+
+      if (message.type === "ai") {
+        const parsed = marked.parse(message.text);
+
+        content.innerHTML = DOMPurify.sanitize(parsed);
+
+        content.querySelectorAll("pre code").forEach(block => {
+          hljs.highlightElement(block);
+        });
+
+        content.querySelectorAll("a").forEach(link => {
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+        });
+
+      } else {
+        content.textContent = message.text;
+      }
+
+      el.appendChild(content);
+    }
+
+    const imageSrc = message.id
+      ? temporaryImages.get(message.id)
+      : null;
+
+    if (imageSrc) {
+      const img = document.createElement("img");
+      img.src = imageSrc;
+      img.className = "msg-image";
+      img.alt = "Gambar pengguna";
+      el.appendChild(img);
+    }
+
+    chat.appendChild(el);
+  });
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function renderHistory() {
+  historyList.innerHTML = "";
+
+  [...conversations]
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .forEach(conversation => {
+      const item = document.createElement("div");
+      item.className = "history-item";
+
+      const open = document.createElement("button");
+      open.className = "history-open";
+      open.textContent = conversation.title;
+
+      open.onclick = () => {
+        activeChatId = conversation.id;
+        renderMessages();
+        historyPanel.classList.remove("show");
+      };
+
+      const remove = document.createElement("button");
+      remove.className = "history-delete";
+      remove.textContent = "✕";
+
+      remove.onclick = () => {
+        if (!confirm("Hapus percakapan ini?")) return;
+
+        conversations = conversations.filter(
+          c => c.id !== conversation.id
+        );
+
+        if (activeChatId === conversation.id) {
+          activeChatId = null;
+        }
+
+        saveChats();
+
+        if (!activeChatId) {
+          createNewChat();
+        } else {
+          renderMessages();
+          renderHistory();
+        }
+      };
+
+      item.append(open, remove);
+      historyList.appendChild(item);
+    });
+}
+
+// ==================================
+// AUTH UI
+// ==================================
+
 function updateAuthUI() {
-  imageBtn.disabled = false;
+  imageBtn.disabled = !authReady;
 
   if (currentUser) {
     accountStatus.textContent =
-      'Login sebagai: ' + currentUser.email;
+      "Login sebagai: " + currentUser.email;
 
-    authForm.style.display = 'none';
-    logoutBtn.style.display = 'inline-block';
+    authForm.style.display = "none";
+    logoutBtn.style.display = "inline-block";
 
-    imageBtn.title = 'Kirim gambar';
+    imageBtn.title = "Kirim gambar";
+
   } else {
     accountStatus.textContent =
-      'Kamu sedang menggunakan mode tamu';
+      "Mode tamu • Login untuk menggunakan gambar";
 
-    authForm.style.display = 'block';
-    logoutBtn.style.display = 'none';
+    authForm.style.display = "block";
+    logoutBtn.style.display = "none";
 
-    imageBtn.title = 'Login untuk mengirim gambar';
+    imageBtn.title = "Login untuk mengirim gambar";
   }
 }
 
-async function checkLogin() {
-  const { data, error } =
-    await supabaseClient.auth.getSession();
+// ==================================
+// AUTH INITIALIZATION
+// ==================================
 
-  if (error) {
+async function checkLogin() {
+  try {
+    const { data, error } =
+      await supabaseClient.auth.getSession();
+
+    if (error) throw error;
+
+    currentUser = data.session?.user || null;
+
+  } catch (error) {
     authMessage.textContent = error.message;
   }
 
-  currentUser = data?.session?.user || null;
   authReady = true;
-
   updateAuthUI();
   loadChats();
 }
 
-// DAFTAR AKUN
+supabaseClient.auth.onAuthStateChange(
+  (event, session) => {
+    if (event === "INITIAL_SESSION") return;
+
+    const previousId = currentUser?.id || null;
+    const nextId = session?.user?.id || null;
+
+    if (previousId === nextId) return;
+
+    currentUser = session?.user || null;
+
+    selectedImage = null;
+    selectedMimeType = null;
+    previewImage.src = "";
+    previewArea.classList.remove("show");
+
+    updateAuthUI();
+    loadChats();
+  }
+);
+
+// ==================================
+// REGISTER
+// ==================================
+
 async function registerAccount() {
-  const username = usernameInput.value.trim();
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
+  const username = $("usernameInput").value.trim();
+  const email = $("emailInput").value.trim();
+  const password = $("passwordInput").value;
 
   if (!username || !email || !password) {
     authMessage.textContent =
-      'Isi username, email, dan password dahulu.';
+      "Isi username, email, dan password.";
     return;
   }
 
   if (password.length < 6) {
     authMessage.textContent =
-      'Password minimal 6 karakter.';
+      "Password minimal 6 karakter.";
     return;
   }
 
-  authMessage.textContent = 'Sedang membuat akun...';
+  authMessage.textContent = "Membuat akun...";
 
   const { data, error } =
     await supabaseClient.auth.signUp({
@@ -467,29 +769,34 @@ async function registerAccount() {
   }
 
   if (data.session) {
-    currentUser = data.session.user;
+    currentUser = data.user;
     updateAuthUI();
     loadChats();
 
-    authMessage.textContent = 'Akun berhasil dibuat!';
+    authMessage.textContent =
+      "Akun berhasil dibuat!";
+
   } else {
     authMessage.textContent =
-      'Pendaftaran berhasil. Periksa email untuk verifikasi sebelum login.';
+      "Pendaftaran berhasil. Periksa email untuk verifikasi.";
   }
 }
 
+// ==================================
 // LOGIN
+// ==================================
+
 async function loginAccount() {
-  const email = emailInput.value.trim();
-  const password = passwordInput.value;
+  const email = $("emailInput").value.trim();
+  const password = $("passwordInput").value;
 
   if (!email || !password) {
     authMessage.textContent =
-      'Masukkan email dan password.';
+      "Masukkan email dan password.";
     return;
   }
 
-  authMessage.textContent = 'Sedang login...';
+  authMessage.textContent = "Sedang login...";
 
   const { data, error } =
     await supabaseClient.auth.signInWithPassword({
@@ -506,12 +813,16 @@ async function loginAccount() {
   updateAuthUI();
   loadChats();
 
-  authMessage.textContent = 'Login berhasil!';
+  authMessage.textContent = "Login berhasil!";
 }
 
+// ==================================
 // LOGOUT
+// ==================================
+
 async function logoutAccount() {
-  const { error } = await supabaseClient.auth.signOut();
+  const { error } =
+    await supabaseClient.auth.signOut();
 
   if (error) {
     authMessage.textContent = error.message;
@@ -522,185 +833,62 @@ async function logoutAccount() {
   selectedImage = null;
   selectedMimeType = null;
 
-  previewImage.src = '';
-  previewArea.classList.remove('show');
+  previewImage.src = "";
+  previewArea.classList.remove("show");
 
   updateAuthUI();
   loadChats();
 
-  authMessage.textContent = 'Kamu sudah logout.';
+  authMessage.textContent = "Berhasil logout.";
 }
 
-// PERUBAHAN STATUS AUTENTIKASI
-supabaseClient.auth.onAuthStateChange(
-  (event, session) => {
-    if (event === 'INITIAL_SESSION') return;
+// ==================================
+// IMAGE UPLOAD
+// ==================================
 
-    currentUser = session?.user || null;
-
-    updateAuthUI();
-    loadChats();
-  }
-);
-
-// CHAT
-function newChat() {
-  const conversation = {
-    id: crypto.randomUUID(),
-    title: 'Percakapan baru',
-    updatedAt: Date.now(),
-    messages: []
-  };
-
-  conversations.unshift(conversation);
-  activeChatId = conversation.id;
-
-  saveChats();
-  renderMessages();
-  renderHistory();
-
-  historyPanel.classList.remove('show');
-}
-
-function renderMessages() {
-  chat.innerHTML = '';
-
-  const conversation = getActiveChat();
-  if (!conversation) return;
-
-  conversation.messages.forEach(message => {
-    const el = document.createElement('div');
-    el.className = 'msg ' + message.type;
-
-    if (message.text) {
-      const text = document.createElement('div');
-      text.textContent = message.text;
-      el.appendChild(text);
-    }
-
-    const imageSrc = message.id
-  ? temporaryImages.get(message.id)
-  : null;
-
-if (imageSrc || message.image) {
-  const img = document.createElement('img');
-
-  img.src = imageSrc || message.image;
-  img.className = 'msg-image';
-  img.alt = 'Gambar yang dikirim';
-
-  el.appendChild(img);
-}
-
-    chat.appendChild(el);
-  });
-
-  chat.scrollTop = chat.scrollHeight;
-}
-
-function renderHistory() {
-  historyList.innerHTML = '';
-
-  [...conversations]
-    .sort((a, b) => b.updatedAt - a.updatedAt)
-    .forEach(conversation => {
-      const item = document.createElement('div');
-      item.className = 'history-item';
-
-      const open = document.createElement('button');
-      open.className = 'history-open';
-      open.textContent = conversation.title;
-
-      open.onclick = () => {
-        activeChatId = conversation.id;
-        renderMessages();
-        historyPanel.classList.remove('show');
-      };
-
-      const remove = document.createElement('button');
-      remove.className = 'history-delete';
-      remove.textContent = '✕';
-
-      remove.onclick = () => {
-        if (!confirm('Hapus percakapan ini?')) return;
-
-        conversations = conversations.filter(
-          c => c.id !== conversation.id
-        );
-
-        if (activeChatId === conversation.id) {
-          activeChatId = conversations[0]?.id || null;
-        }
-
-        saveChats();
-
-        if (!activeChatId) {
-          newChat();
-        } else {
-          renderMessages();
-          renderHistory();
-        }
-      };
-
-      item.appendChild(open);
-      item.appendChild(remove);
-      historyList.appendChild(item);
-    });
-}
-
-// GAMBAR
-imageBtn.addEventListener('click', () => {
-  if (!authReady) {
-    alert('Sedang memeriksa akun. Tunggu sebentar ya!');
-    return;
-  }
+imageBtn.addEventListener("click", () => {
+  if (!authReady) return;
 
   if (!currentUser) {
     alert(
-      '🔒 FITUR GAMBAR TERKUNCI\n\n' +
-      'Untuk mengirim gambar, kamu harus login terlebih dahulu.\n\n' +
-      'Silakan buka menu Akun dan login atau daftar akun Senko AI.'
+      "🔒 Login dahulu untuk mengirim gambar."
     );
 
-    accountPanel.classList.add('show');
-
+    accountPanel.classList.add("show");
     return;
   }
 
   const choice = confirm(
-    'Pilih sumber gambar:\n\n' +
-    'OK = Galeri\n' +
-    'Batal = Kamera'
+    "OK = Galeri\nBatal = Kamera"
   );
 
-  if (choice) {
-    imageInput.click();
-  } else {
-    cameraInput.click();
-  }
+  if (choice) imageInput.click();
+  else cameraInput.click();
 });
 
 function handleImage(file) {
   if (!currentUser) {
-    alert('Login dahulu untuk mengirim gambar.');
+    alert("Login dahulu.");
     return;
   }
 
   if (!file) return;
 
-  const allowedTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/webp'
+  const allowed = [
+    "image/jpeg",
+    "image/png",
+    "image/webp"
   ];
 
-  if (!allowedTypes.includes(file.type)) {
-    alert('Format gambar harus JPG, PNG, atau WEBP.');
+  if (!allowed.includes(file.type)) {
+    alert("Format harus JPG, PNG, atau WEBP.");
     return;
   }
 
-  if (file.size > 8 * 1024 * 1024) {
-    alert('Ukuran gambar maksimal 8 MB.');
+  // Batas dibuat kecil agar request tidak
+  // melewati batas payload serverless.
+  if (file.size > 3 * 1024 * 1024) {
+    alert("Ukuran gambar maksimal 3 MB.");
     return;
   }
 
@@ -709,54 +897,71 @@ function handleImage(file) {
   reader.onload = () => {
     const dataUrl = reader.result;
 
-    selectedImage = dataUrl.split(',')[1];
+    selectedImage = dataUrl.split(",")[1];
     selectedMimeType = file.type;
 
     previewImage.src = dataUrl;
-    previewArea.classList.add('show');
+    previewArea.classList.add("show");
+  };
+
+  reader.onerror = () => {
+    alert("Gagal membaca gambar.");
   };
 
   reader.readAsDataURL(file);
 }
 
-imageInput.addEventListener('change', e => {
+imageInput.addEventListener("change", e => {
   handleImage(e.target.files[0]);
-  e.target.value = '';
+  e.target.value = "";
 });
 
-cameraInput.addEventListener('change', e => {
+cameraInput.addEventListener("change", e => {
   handleImage(e.target.files[0]);
-  e.target.value = '';
+  e.target.value = "";
 });
 
-removeImage.addEventListener('click', () => {
+$("removeImage").addEventListener("click", () => {
   selectedImage = null;
   selectedMimeType = null;
-  previewImage.src = '';
-  previewArea.classList.remove('show');
+
+  previewImage.src = "";
+  previewArea.classList.remove("show");
 });
 
-// KIRIM PESAN
+// ==================================
+// SENKO AI ENGINE
+// ==================================
+
 async function ask() {
-  if (!authReady || send.disabled) return;
+  if (!authReady || sending) return;
 
   const message = input.value.trim();
 
-  if ((!message && !selectedImage)) return;
+  if (!message && !selectedImage) return;
 
   if (selectedImage && !currentUser) {
-    alert('Login dahulu untuk mengirim gambar.');
+    alert("Login dahulu untuk mengirim gambar.");
     return;
   }
 
   let conversation = getActiveChat();
 
   if (!conversation) {
-    newChat();
+    createNewChat();
     conversation = getActiveChat();
   }
 
   const currentId = conversation.id;
+
+  // Ambil riwayat sebelum pesan baru.
+  const history = conversation.messages
+    .slice(-12)
+    .map(item => ({
+      role: item.type === "ai" ? "model" : "user",
+      text: item.text || ""
+    }));
+
   const imageToSend = selectedImage;
   const mimeToSend = selectedMimeType;
 
@@ -764,31 +969,31 @@ async function ask() {
     ? `data:${mimeToSend};base64,${imageToSend}`
     : null;
 
-  input.value = '';
+  input.value = "";
   selectedImage = null;
   selectedMimeType = null;
 
-  previewImage.src = '';
-  previewArea.classList.remove('show');
+  previewImage.src = "";
+  previewArea.classList.remove("show");
 
   const userMessage = {
-  id: crypto.randomUUID(),
-  text: message,
-  type: 'user'
-};
+    id: crypto.randomUUID(),
+    type: "user",
+    text: message
+  };
 
-if (imagePreview) {
-  temporaryImages.set(
-    userMessage.id,
-    imagePreview
-  );
-}
+  if (imagePreview) {
+    temporaryImages.set(
+      userMessage.id,
+      imagePreview
+    );
+  }
 
-conversation.messages.push(userMessage);
+  conversation.messages.push(userMessage);
 
-  if (conversation.title === 'Percakapan baru') {
+  if (conversation.title === "Percakapan baru") {
     conversation.title =
-      (message || 'Gambar').slice(0, 35);
+      (message || "Gambar").slice(0, 35);
   }
 
   conversation.updatedAt = Date.now();
@@ -797,110 +1002,44 @@ conversation.messages.push(userMessage);
   renderMessages();
   renderHistory();
 
+  sending = true;
   send.disabled = true;
 
-  const loading = document.createElement('div');
-  loading.className = 'msg ai';
-  loading.textContent = 'mengetik...';
+  const loading = document.createElement("div");
+  loading.className = "msg ai typing";
+  loading.textContent = "senko sedang mengetik...";
 
   if (activeChatId === currentId) {
     chat.appendChild(loading);
+    chat.scrollTop = chat.scrollHeight;
   }
 
   try {
     const headers = {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json"
     };
 
-    // Token akun dikirim untuk pemeriksaan backend.
     if (currentUser) {
-      const { data } =
+      const { data, error } =
         await supabaseClient.auth.getSession();
 
-      const token = data.session?.access_token;
-
-      if (token) {
-        headers.Authorization = 'Bearer ' + token;
+      if (error || !data.session?.access_token) {
+        throw new Error("Sesi login berakhir. Login kembali.");
       }
+
+      headers.Authorization =
+        "Bearer " + data.session.access_token;
     }
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
+    const response = await fetch("/api/chat", {
+      method: "POST",
       headers,
       body: JSON.stringify({
         message,
         userId: currentUser?.id || guestId,
+        isGuest: !currentUser,
+        history,
+
         image: imageToSend
           ? {
-              mimeType: mimeToSend,
-              data: imageToSend
-            }
-          : null
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Terjadi kesalahan');
-    }
-
-    conversation.messages.push({
-      text: data.reply,
-      type: 'ai'
-    });
-
-  } catch (error) {
-    conversation.messages.push({
-      text: 'Gagal: ' + error.message,
-      type: 'ai'
-    });
-  } finally {
-    conversation.updatedAt = Date.now();
-
-    saveChats();
-    renderHistory();
-
-    if (activeChatId === currentId) {
-      renderMessages();
-    }
-
-    send.disabled = false;
-    input.focus();
-  }
-}
-
-// TOMBOL
-document.getElementById('accountBtn')
-  .addEventListener('click', () => {
-    accountPanel.classList.toggle('show');
-  });
-
-document.getElementById('registerBtn')
-  .addEventListener('click', registerAccount);
-
-document.getElementById('loginBtn')
-  .addEventListener('click', loginAccount);
-
-logoutBtn.addEventListener('click', logoutAccount);
-
-document.getElementById('newChatBtn')
-  .addEventListener('click', newChat);
-
-document.getElementById('historyBtn')
-  .addEventListener('click', () => {
-    historyPanel.classList.toggle('show');
-  });
-
-send.addEventListener('click', ask);
-
-input.addEventListener('keydown', e => {
-  if (e.key === 'Enter') ask();
-});
-
-// MULAI APLIKASI
-checkLogin();
-</script>
-
-</body>
-  </html>
+     

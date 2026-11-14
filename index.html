@@ -2,413 +2,404 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#0b0d14">
-<title>Senko AI</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0d14">
+  <title>Senko AI</title>
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.6/dist/purify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-* {
-  box-sizing: border-box;
-}
+  <style>
+    * { box-sizing: border-box; }
 
-body {
-  margin: 0;
-  background: #0b0d14;
-  color: #fff;
-  font-family: Arial, sans-serif;
-  height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
+    body {
+      margin: 0;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      background: #0b0d14;
+      color: #fff;
+      font-family: Arial, sans-serif;
+    }
 
-button {
-  border: 0;
-  border-radius: 10px;
-  padding: 11px 13px;
-  background: #7868ff;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-}
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 13px;
+      background: #7868ff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-button:disabled {
-  opacity: .5;
-  cursor: not-allowed;
-}
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
 
-header {
-  padding: 13px;
-  background: #121522;
-  border-bottom: 1px solid #25283a;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
+    header {
+      padding: 13px;
+      background: #121522;
+      border-bottom: 1px solid #25283a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
 
-.logo {
-  font-size: 20px;
-  font-weight: bold;
-  white-space: nowrap;
-}
+    .logo {
+      font-size: 20px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
 
-.logo span {
-  color: #9889ff;
-}
+    .logo span, .welcome span { color: #9889ff; }
 
-.header-buttons {
-  display: flex;
-  gap: 6px;
-}
+    .header-buttons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
-.header-buttons button {
-  padding: 10px;
-  font-size: 12px;
-}
+    .header-buttons button {
+      padding: 10px;
+      font-size: 12px;
+    }
 
-#accountPanel,
-#historyPanel {
-  display: none;
-  padding: 14px;
-  background: #121522;
-  border-bottom: 1px solid #25283a;
-}
+    #accountPanel, #historyPanel {
+      display: none;
+      padding: 14px;
+      background: #121522;
+      border-bottom: 1px solid #25283a;
+    }
 
-#accountPanel.show,
-#historyPanel.show {
-  display: block;
-}
+    #accountPanel.show, #historyPanel.show { display: block; }
 
-#accountPanel input {
-  width: 100%;
-  padding: 12px;
-  margin: 5px 0;
-  background: #1c2030;
-  border: 1px solid #34384c;
-  border-radius: 9px;
-  color: white;
-}
+    #accountPanel input {
+      width: 100%;
+      padding: 12px;
+      margin: 5px 0;
+      background: #1c2030;
+      border: 1px solid #34384c;
+      border-radius: 9px;
+      color: white;
+    }
 
-#accountStatus {
-  margin-bottom: 10px;
-  color: #c2baff;
-  font-size: 13px;
-}
+    #accountStatus, #authMessage {
+      color: #c2baff;
+      font-size: 13px;
+    }
 
-#authMessage {
-  color: #c2baff;
-  font-size: 13px;
-  margin-top: 9px;
-}
+    #accountStatus { margin-bottom: 10px; }
+    #authMessage { margin-top: 9px; }
 
-#historyPanel {
-  max-height: 230px;
-  overflow-y: auto;
-}
+    #logoutBtn { background: #a33c50; }
 
-.history-title {
-  color: #aaa;
-  font-size: 12px;
-  margin-bottom: 10px;
-}
+    #historyPanel {
+      max-height: 230px;
+      overflow-y: auto;
+    }
 
-.history-item {
-  display: flex;
-  gap: 7px;
-  margin-bottom: 7px;
-}
+    .history-title {
+      color: #aaa;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
 
-.history-open {
-  flex: 1;
-  text-align: left;
-  background: #202438;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+    .history-item {
+      display: flex;
+      gap: 7px;
+      margin-bottom: 7px;
+    }
 
-.history-delete {
-  background: #a33c50;
-}
+    .history-open {
+      flex: 1;
+      text-align: left;
+      background: #202438;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
 
-#chat {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  scroll-behavior: smooth;
-}
+    .history-delete { background: #a33c50; }
 
-.welcome {
-  margin: auto;
-  text-align: center;
-  color: #aaa;
-  max-width: 290px;
-}
+    #chat {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
 
-.welcome h2 {
-  color: white;
-}
+    .welcome {
+      margin: auto;
+      text-align: center;
+      color: #aaa;
+      max-width: 290px;
+    }
 
-.welcome span {
-  color: #9585ff;
-}
+    .welcome h2 { color: white; }
 
-.msg {
-  padding: 13px 15px;
-  border-radius: 15px;
-  max-width: 92%;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-}
+    .msg {
+      padding: 13px 15px;
+      border-radius: 15px;
+      max-width: 92%;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
 
-.user {
-  background: #6254dc;
-  align-self: flex-end;
-}
+    .user {
+      background: #6254dc;
+      align-self: flex-end;
+    }
 
-.ai {
-  background: #191d2b;
-  align-self: flex-start;
-}
+    .ai {
+      background: #191d2b;
+      align-self: flex-start;
+    }
 
-.msg-content p {
-  margin: 4px 0 12px;
-}
+    .msg-content p { margin: 4px 0 12px; }
 
-.msg-content ul,
-.msg-content ol {
-  padding-left: 22px;
-}
+    .msg-content ul, .msg-content ol {
+      padding-left: 22px;
+    }
 
-.msg-content pre {
-  background: #080a10;
-  padding: 12px;
-  border-radius: 10px;
-  overflow-x: auto;
-  max-width: 100%;
-}
+    .msg-content pre {
+      background: #080a10;
+      padding: 12px;
+      border-radius: 10px;
+      overflow-x: auto;
+      max-width: 100%;
+    }
 
-.msg-content pre code {
-  font-size: 13px;
-  white-space: pre;
-}
+    .msg-content pre code {
+      font-size: 13px;
+      white-space: pre;
+    }
 
-.msg-content :not(pre) > code {
-  background: #292d43;
-  padding: 3px 6px;
-  border-radius: 5px;
-}
+    .msg-content :not(pre) > code {
+      background: #292d43;
+      padding: 3px 6px;
+      border-radius: 5px;
+    }
 
-.msg-image {
-  display: block;
-  max-width: 230px;
-  max-height: 230px;
-  object-fit: contain;
-  border-radius: 10px;
-  margin-top: 8px;
-}
+    .msg-content a {
+      color: #b6aaff;
+      overflow-wrap: anywhere;
+    }
 
-.typing {
-  color: #aaa;
-  font-size: 13px;
-  animation: pulse 1s infinite alternate;
-}
+    .msg-image {
+      display: block;
+      max-width: 230px;
+      max-height: 230px;
+      object-fit: contain;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
 
-@keyframes pulse {
-  to { opacity: .4; }
-}
+    .typing {
+      color: #aaa;
+      font-size: 13px;
+      animation: pulse 1s infinite alternate;
+    }
 
-#previewArea {
-  display: none;
-  padding: 10px;
-  background: #121522;
-  align-items: center;
-  gap: 10px;
-}
+    @keyframes pulse {
+      to { opacity: .4; }
+    }
 
-#previewArea.show {
-  display: flex;
-}
+    #previewArea {
+      display: none;
+      padding: 10px;
+      background: #121522;
+      align-items: center;
+      gap: 10px;
+    }
 
-#previewImage {
-  width: 65px;
-  height: 65px;
-  object-fit: cover;
-  border-radius: 9px;
-}
+    #previewArea.show { display: flex; }
 
-#removeImage {
-  background: #a33c50;
-}
+    #previewImage {
+      width: 65px;
+      height: 65px;
+      object-fit: cover;
+      border-radius: 9px;
+    }
 
-footer {
-  padding: 10px;
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  background: #121522;
-  border-top: 1px solid #25283a;
-}
+    #removeImage { background: #a33c50; }
 
-#input {
-  flex: 1;
-  min-width: 0;
-  padding: 13px;
-  border-radius: 11px;
-  border: 1px solid #34384c;
-  background: #1c2030;
-  color: white;
-  font-size: 15px;
-  outline: none;
-}
+    footer {
+      padding: 10px;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      background: #121522;
+      border-top: 1px solid #25283a;
+    }
 
-#input:focus {
-  border-color: #7868ff;
-}
+    #input {
+      flex: 1;
+      min-width: 0;
+      padding: 13px;
+      border-radius: 11px;
+      border: 1px solid #34384c;
+      background: #1c2030;
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
 
-#imageBtn {
-  background: #292d43;
-  font-size: 18px;
-  padding: 11px;
-}
+    #input:focus { border-color: #7868ff; }
 
-#send {
-  padding: 12px;
-}
+    #imageBtn {
+      background: #292d43;
+      font-size: 18px;
+      padding: 11px;
+    }
 
-#logoutBtn {
-  background: #a33c50;
-}
+    #send { padding: 12px; }
 
-.small-note {
-  color: #888;
-  font-size: 11px;
-  text-align: center;
-  padding: 5px;
-}
+    .small-note {
+      color: #888;
+      font-size: 11px;
+      text-align: center;
+      padding: 5px;
+      background: #121522;
+    }
 
-@media (max-width: 380px) {
-  .logo { font-size: 16px; }
-  .header-buttons button { padding: 9px 7px; }
-  #chat { padding: 10px; }
-}
-</style>
+    @media (max-width: 380px) {
+      .logo { font-size: 16px; }
+      .header-buttons button { padding: 9px 7px; }
+      #chat { padding: 10px; }
+    }
+  </style>
 </head>
 
 <body>
 
-<header>
-  <div class="logo">✦ <span>SENKO</span>AI</div>
-
-  <div class="header-buttons">
-    <button id="accountBtn">Akun</button>
-    <button id="historyBtn">☰</button>
-    <button id="newChatBtn">＋ Chat</button>
-  </div>
-</header>
-
-<section id="accountPanel">
-  <div id="accountStatus">Memeriksa akun...</div>
-
-  <div id="authForm">
-    <input id="usernameInput"
-      placeholder="Username"
-      autocomplete="username">
-
-    <input id="emailInput"
-      type="email"
-      placeholder="Email"
-      autocomplete="email">
-
-    <input id="passwordInput"
-      type="password"
-      placeholder="Password minimal 6 karakter"
-      autocomplete="current-password">
+  <header>
+    <div class="logo">✦ <span>SENKO</span>AI</div>
 
     <div class="header-buttons">
-      <button id="registerBtn">Daftar</button>
-      <button id="loginBtn">Login</button>
+      <button id="accountBtn" type="button">Akun</button>
+      <button id="historyBtn" type="button">☰</button>
+      <button id="newChatBtn" type="button">＋ Chat</button>
     </div>
+  </header>
+
+  <section id="accountPanel">
+    <div id="accountStatus">Memeriksa akun...</div>
+
+    <div id="authForm">
+      <input id="usernameInput"
+        placeholder="Username"
+        autocomplete="username">
+
+      <input id="emailInput"
+        type="email"
+        placeholder="Email"
+        autocomplete="email">
+
+      <input id="passwordInput"
+        type="password"
+        placeholder="Password minimal 6 karakter"
+        autocomplete="current-password">
+
+      <div class="header-buttons">
+        <button id="registerBtn" type="button">Daftar</button>
+        <button id="loginBtn" type="button">Login</button>
+      </div>
+    </div>
+
+    <button id="logoutBtn" type="button" style="display:none">
+      Logout
+    </button>
+
+    <div id="authMessage"></div>
+  </section>
+
+  <section id="historyPanel">
+    <div class="history-title">RIWAYAT PERCAKAPAN</div>
+    <div id="historyList"></div>
+  </section>
+
+  <main id="chat">
+    <div class="welcome">
+      <h2>✦ SENKO <span>AI</span></h2>
+      <p>halo kaka! ada yang bisa senko bantu?</p>
+    </div>
+  </main>
+
+  <div id="previewArea">
+    <img id="previewImage" alt="Preview gambar">
+    <button id="removeImage" type="button">✕</button>
   </div>
 
-  <button id="logoutBtn" style="display:none">
-    Logout
-  </button>
+  <footer>
+    <button id="imageBtn" type="button" disabled>📎</button>
 
-  <div id="authMessage"></div>
-</section>
+    <input id="imageInput"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      hidden>
 
-<section id="historyPanel">
-  <div class="history-title">RIWAYAT PERCAKAPAN</div>
-  <div id="historyList"></div>
-</section>
+    <input id="cameraInput"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      capture="environment"
+      hidden>
 
-<main id="chat">
-  <div class="welcome">
-    <h2>✦ SENKO <span>AI</span></h2>
-    <p>halo kaka! ada yang bisa senko bantu?</p>
+    <input id="input"
+      placeholder="Ketik pesan..."
+      autocomplete="off">
+
+    <button id="send" type="button">Kirim</button>
+  </footer>
+
+  <div class="small-note">
+    Senko AI • Your personal AI assistant
   </div>
-</main>
-
-<div id="previewArea">
-  <img id="previewImage" alt="Preview gambar">
-  <button id="removeImage">✕</button>
-</div>
-
-<footer>
-  <button id="imageBtn" disabled>📎</button>
-
-  <input id="imageInput"
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-    hidden>
-
-  <input id="cameraInput"
-    type="file"
-    accept="image/jpeg,image/png,image/webp"
-    capture="environment"
-    hidden>
-
-  <input id="input"
-    placeholder="Ketik pesan..."
-    autocomplete="off">
-
-  <button id="send">Kirim</button>
-</footer>
-
-<div class="small-note">
-  Senko AI • Your personal AI assistant
-</div>
 
 <script>
+"use strict";
+
+// ==================================
+// KONFIGURASI
+// ==================================
+
 const SUPABASE_URL =
   "https://mtgfciwnuxaxbjoencvg.supabase.co";
 
 const SUPABASE_KEY =
   "sb_publishable_DLnbdI8iZt9uqGcUwViHMw_o-8XSjPi";
 
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-
-// ==================================
-// ELEMENTS
-// ==================================
-
 const $ = id => document.getElementById(id);
+
+function createId() {
+  if (window.crypto && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+    /[xy]/g,
+    char => {
+      const random = Math.random() * 16 | 0;
+      const value = char === "x" ? random : (random & 3 | 8);
+      return value.toString(16);
+    }
+  );
+}
+
+// ==================================
+// ELEMENT
+// ==================================
 
 const chat = $("chat");
 const input = $("input");
@@ -435,6 +426,7 @@ const historyList = $("historyList");
 // STATE
 // ==================================
 
+let supabaseClient = null;
 let currentUser = null;
 let authReady = false;
 
@@ -451,9 +443,8 @@ const temporaryImages = new Map();
 
 let guestId = localStorage.getItem("senko_user_id");
 
-if (!guestId ||
-    !/^[0-9a-f-]{36}$/i.test(guestId)) {
-  guestId = crypto.randomUUID();
+if (!guestId || !/^[0-9a-f-]{36}$/i.test(guestId)) {
+  guestId = createId();
   localStorage.setItem("senko_user_id", guestId);
 }
 
@@ -462,21 +453,19 @@ if (!guestId ||
 // ==================================
 
 function getActiveChat() {
-  return conversations.find(
-    item => item.id === activeChatId
-  );
+  return conversations.find(item => item.id === activeChatId);
 }
 
 function saveChats() {
   if (!activeStorageKey) return;
 
   try {
-    const lightweight = conversations.map(c => ({
-      ...c,
-      messages: c.messages.map(m => ({
-        id: m.id,
-        type: m.type,
-        text: m.text || ""
+    const lightweight = conversations.map(conversation => ({
+      ...conversation,
+      messages: conversation.messages.map(message => ({
+        id: message.id,
+        type: message.type,
+        text: message.text || ""
       }))
     }));
 
@@ -484,11 +473,9 @@ function saveChats() {
       activeStorageKey,
       JSON.stringify(lightweight)
     );
-
   } catch (error) {
-    console.error("Storage:", error);
-    authMessage.textContent =
-      "Penyimpanan riwayat gagal.";
+    console.error("Storage error:", error);
+    authMessage.textContent = "Penyimpanan riwayat gagal.";
   }
 }
 
@@ -502,16 +489,14 @@ function loadChats() {
       localStorage.getItem(activeStorageKey) || "[]"
     );
 
-    conversations = Array.isArray(stored)
-      ? stored
-      : [];
-
-  } catch {
+    conversations = Array.isArray(stored) ? stored : [];
+  } catch (error) {
+    console.error("Load chat error:", error);
     conversations = [];
   }
 
   conversations.sort(
-    (a, b) => b.updatedAt - a.updatedAt
+    (a, b) => (b.updatedAt || 0) - (a.updatedAt || 0)
   );
 
   activeChatId = conversations[0]?.id || null;
@@ -530,7 +515,7 @@ function loadChats() {
 
 function createNewChat() {
   const conversation = {
-    id: crypto.randomUUID(),
+    id: createId(),
     title: "Percakapan baru",
     updatedAt: Date.now(),
     messages: []
@@ -550,7 +535,6 @@ function renderMessages() {
   chat.innerHTML = "";
 
   const conversation = getActiveChat();
-
   if (!conversation) return;
 
   if (!conversation.messages.length) {
@@ -566,26 +550,35 @@ function renderMessages() {
 
   conversation.messages.forEach(message => {
     const el = document.createElement("div");
-    el.className = "msg " + message.type;
+    el.className = "msg " + (
+      message.type === "user" ? "user" : "ai"
+    );
 
     if (message.text) {
       const content = document.createElement("div");
       content.className = "msg-content";
 
-      if (message.type === "ai") {
-        const parsed = marked.parse(message.text);
+      if (message.type === "ai" &&
+          window.marked &&
+          window.DOMPurify) {
+        try {
+          const parsed = marked.parse(message.text);
+          content.innerHTML = DOMPurify.sanitize(parsed);
 
-        content.innerHTML = DOMPurify.sanitize(parsed);
+          if (window.hljs) {
+            content.querySelectorAll("pre code").forEach(block => {
+              hljs.highlightElement(block);
+            });
+          }
 
-        content.querySelectorAll("pre code").forEach(block => {
-          hljs.highlightElement(block);
-        });
-
-        content.querySelectorAll("a").forEach(link => {
-          link.target = "_blank";
-          link.rel = "noopener noreferrer";
-        });
-
+          content.querySelectorAll("a").forEach(link => {
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+          });
+        } catch (error) {
+          console.error("Markdown error:", error);
+          content.textContent = message.text;
+        }
       } else {
         content.textContent = message.text;
       }
@@ -615,30 +608,32 @@ function renderHistory() {
   historyList.innerHTML = "";
 
   [...conversations]
-    .sort((a, b) => b.updatedAt - a.updatedAt)
+    .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
     .forEach(conversation => {
       const item = document.createElement("div");
       item.className = "history-item";
 
       const open = document.createElement("button");
+      open.type = "button";
       open.className = "history-open";
-      open.textContent = conversation.title;
+      open.textContent = conversation.title || "Percakapan";
 
-      open.onclick = () => {
+      open.addEventListener("click", () => {
         activeChatId = conversation.id;
         renderMessages();
         historyPanel.classList.remove("show");
-      };
+      });
 
       const remove = document.createElement("button");
+      remove.type = "button";
       remove.className = "history-delete";
       remove.textContent = "✕";
 
-      remove.onclick = () => {
+      remove.addEventListener("click", () => {
         if (!confirm("Hapus percakapan ini?")) return;
 
         conversations = conversations.filter(
-          c => c.id !== conversation.id
+          item => item.id !== conversation.id
         );
 
         if (activeChatId === conversation.id) {
@@ -653,7 +648,7 @@ function renderHistory() {
           renderMessages();
           renderHistory();
         }
-      };
+      });
 
       item.append(open, remove);
       historyList.appendChild(item);
@@ -669,20 +664,17 @@ function updateAuthUI() {
 
   if (currentUser) {
     accountStatus.textContent =
-      "Login sebagai: " + currentUser.email;
+      "Login sebagai: " + (currentUser.email || "Pengguna");
 
     authForm.style.display = "none";
     logoutBtn.style.display = "inline-block";
-
     imageBtn.title = "Kirim gambar";
-
   } else {
     accountStatus.textContent =
       "Mode tamu • Login untuk menggunakan gambar";
 
     authForm.style.display = "block";
     logoutBtn.style.display = "none";
-
     imageBtn.title = "Login untuk mengirim gambar";
   }
 }
@@ -691,17 +683,54 @@ function updateAuthUI() {
 // AUTH INITIALIZATION
 // ==================================
 
-async function checkLogin() {
+async function initializeAuth() {
+  if (!window.supabase || !window.supabase.createClient) {
+    console.error("Supabase library tidak berhasil dimuat.");
+    accountStatus.textContent =
+      "Layanan akun tidak tersedia. Mode tamu tetap bisa digunakan.";
+
+    authReady = true;
+    updateAuthUI();
+    loadChats();
+    return;
+  }
+
   try {
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") return;
+
+      const previousId = currentUser?.id || null;
+      const nextId = session?.user?.id || null;
+
+      if (previousId === nextId) return;
+
+      currentUser = session?.user || null;
+
+      selectedImage = null;
+      selectedMimeType = null;
+      previewImage.src = "";
+      previewArea.classList.remove("show");
+
+      updateAuthUI();
+      loadChats();
+    });
+
     const { data, error } =
       await supabaseClient.auth.getSession();
 
     if (error) throw error;
 
     currentUser = data.session?.user || null;
-
   } catch (error) {
-    authMessage.textContent = error.message;
+    console.error("Auth initialization:", error);
+    currentUser = null;
+    authMessage.textContent =
+      "Gagal memeriksa akun: " + error.message;
   }
 
   authReady = true;
@@ -709,32 +738,16 @@ async function checkLogin() {
   loadChats();
 }
 
-supabaseClient.auth.onAuthStateChange(
-  (event, session) => {
-    if (event === "INITIAL_SESSION") return;
-
-    const previousId = currentUser?.id || null;
-    const nextId = session?.user?.id || null;
-
-    if (previousId === nextId) return;
-
-    currentUser = session?.user || null;
-
-    selectedImage = null;
-    selectedMimeType = null;
-    previewImage.src = "";
-    previewArea.classList.remove("show");
-
-    updateAuthUI();
-    loadChats();
-  }
-);
-
 // ==================================
 // REGISTER
 // ==================================
 
 async function registerAccount() {
+  if (!supabaseClient) {
+    authMessage.textContent = "Layanan akun belum tersedia.";
+    return;
+  }
+
   const username = $("usernameInput").value.trim();
   const email = $("emailInput").value.trim();
   const password = $("passwordInput").value;
@@ -753,31 +766,29 @@ async function registerAccount() {
 
   authMessage.textContent = "Membuat akun...";
 
-  const { data, error } =
-    await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { username }
-      }
-    });
+  try {
+    const { data, error } =
+      await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { username }
+        }
+      });
 
-  if (error) {
+    if (error) throw error;
+
+    if (data.session) {
+      currentUser = data.user;
+      updateAuthUI();
+      loadChats();
+      authMessage.textContent = "Akun berhasil dibuat!";
+    } else {
+      authMessage.textContent =
+        "Pendaftaran berhasil. Periksa email untuk verifikasi.";
+    }
+  } catch (error) {
     authMessage.textContent = error.message;
-    return;
-  }
-
-  if (data.session) {
-    currentUser = data.user;
-    updateAuthUI();
-    loadChats();
-
-    authMessage.textContent =
-      "Akun berhasil dibuat!";
-
-  } else {
-    authMessage.textContent =
-      "Pendaftaran berhasil. Periksa email untuk verifikasi.";
   }
 }
 
@@ -786,6 +797,11 @@ async function registerAccount() {
 // ==================================
 
 async function loginAccount() {
+  if (!supabaseClient) {
+    authMessage.textContent = "Layanan akun belum tersedia.";
+    return;
+  }
+
   const email = $("emailInput").value.trim();
   const password = $("passwordInput").value;
 
@@ -797,22 +813,22 @@ async function loginAccount() {
 
   authMessage.textContent = "Sedang login...";
 
-  const { data, error } =
-    await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+  try {
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
 
-  if (error) {
+    if (error) throw error;
+
+    currentUser = data.user;
+    updateAuthUI();
+    loadChats();
+    authMessage.textContent = "Login berhasil!";
+  } catch (error) {
     authMessage.textContent = error.message;
-    return;
   }
-
-  currentUser = data.user;
-  updateAuthUI();
-  loadChats();
-
-  authMessage.textContent = "Login berhasil!";
 }
 
 // ==================================
@@ -820,50 +836,51 @@ async function loginAccount() {
 // ==================================
 
 async function logoutAccount() {
-  const { error } =
-    await supabaseClient.auth.signOut();
+  if (!supabaseClient) return;
 
-  if (error) {
+  try {
+    const { error } =
+      await supabaseClient.auth.signOut();
+
+    if (error) throw error;
+
+    currentUser = null;
+    selectedImage = null;
+    selectedMimeType = null;
+
+    previewImage.src = "";
+    previewArea.classList.remove("show");
+
+    updateAuthUI();
+    loadChats();
+
+    authMessage.textContent = "Berhasil logout.";
+  } catch (error) {
     authMessage.textContent = error.message;
-    return;
   }
-
-  currentUser = null;
-  selectedImage = null;
-  selectedMimeType = null;
-
-  previewImage.src = "";
-  previewArea.classList.remove("show");
-
-  updateAuthUI();
-  loadChats();
-
-  authMessage.textContent = "Berhasil logout.";
 }
 
 // ==================================
 // IMAGE UPLOAD
 // ==================================
 
-imageBtn.addEventListener("click", () => {
+function chooseImage() {
   if (!authReady) return;
 
   if (!currentUser) {
-    alert(
-      "🔒 Login dahulu untuk mengirim gambar."
-    );
-
+    alert("Login dahulu untuk mengirim gambar.");
     accountPanel.classList.add("show");
     return;
   }
 
-  const choice = confirm(
-    "OK = Galeri\nBatal = Kamera"
-  );
+  const choice = confirm("OK = Galeri\nBatal = Kamera");
 
-  if (choice) imageInput.click();
-  else cameraInput.click();
-});
+  if (choice) {
+    imageInput.click();
+  } else {
+    cameraInput.click();
+  }
+}
 
 function handleImage(file) {
   if (!currentUser) {
@@ -884,8 +901,6 @@ function handleImage(file) {
     return;
   }
 
-  // Batas dibuat kecil agar request tidak
-  // melewati batas payload serverless.
   if (file.size > 3 * 1024 * 1024) {
     alert("Ukuran gambar maksimal 3 MB.");
     return;
@@ -900,145 +915,4 @@ function handleImage(file) {
     selectedMimeType = file.type;
 
     previewImage.src = dataUrl;
-    previewArea.classList.add("show");
-  };
-
-  reader.onerror = () => {
-    alert("Gagal membaca gambar.");
-  };
-
-  reader.readAsDataURL(file);
-}
-
-imageInput.addEventListener("change", e => {
-  handleImage(e.target.files[0]);
-  e.target.value = "";
-});
-
-cameraInput.addEventListener("change", e => {
-  handleImage(e.target.files[0]);
-  e.target.value = "";
-});
-
-$("removeImage").addEventListener("click", () => {
-  selectedImage = null;
-  selectedMimeType = null;
-
-  previewImage.src = "";
-  previewArea.classList.remove("show");
-});
-
-// ==================================
-// SENKO AI ENGINE
-// ==================================
-
-async function ask() {
-  if (!authReady || sending) return;
-
-  const message = input.value.trim();
-
-  if (!message && !selectedImage) return;
-
-  if (selectedImage && !currentUser) {
-    alert("Login dahulu untuk mengirim gambar.");
-    return;
-  }
-
-  let conversation = getActiveChat();
-
-  if (!conversation) {
-    createNewChat();
-    conversation = getActiveChat();
-  }
-
-  const currentId = conversation.id;
-
-  // Ambil riwayat sebelum pesan baru.
-  const history = conversation.messages
-    .slice(-12)
-    .map(item => ({
-      role: item.type === "ai" ? "model" : "user",
-      text: item.text || ""
-    }));
-
-  const imageToSend = selectedImage;
-  const mimeToSend = selectedMimeType;
-
-  const imagePreview = imageToSend
-    ? `data:${mimeToSend};base64,${imageToSend}`
-    : null;
-
-  input.value = "";
-  selectedImage = null;
-  selectedMimeType = null;
-
-  previewImage.src = "";
-  previewArea.classList.remove("show");
-
-  const userMessage = {
-    id: crypto.randomUUID(),
-    type: "user",
-    text: message
-  };
-
-  if (imagePreview) {
-    temporaryImages.set(
-      userMessage.id,
-      imagePreview
-    );
-  }
-
-  conversation.messages.push(userMessage);
-
-  if (conversation.title === "Percakapan baru") {
-    conversation.title =
-      (message || "Gambar").slice(0, 35);
-  }
-
-  conversation.updatedAt = Date.now();
-
-  saveChats();
-  renderMessages();
-  renderHistory();
-
-  sending = true;
-  send.disabled = true;
-
-  const loading = document.createElement("div");
-  loading.className = "msg ai typing";
-  loading.textContent = "senko sedang mengetik...";
-
-  if (activeChatId === currentId) {
-    chat.appendChild(loading);
-    chat.scrollTop = chat.scrollHeight;
-  }
-
-  try {
-    const headers = {
-      "Content-Type": "application/json"
-    };
-
-    if (currentUser) {
-      const { data, error } =
-        await supabaseClient.auth.getSession();
-
-      if (error || !data.session?.access_token) {
-        throw new Error("Sesi login berakhir. Login kembali.");
-      }
-
-      headers.Authorization =
-        "Bearer " + data.session.access_token;
-    }
-
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        message,
-        userId: currentUser?.id || guestId,
-        isGuest: !currentUser,
-        history,
-
-        image: imageToSend
-          ? {
-     
+    previewArea

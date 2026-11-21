@@ -359,9 +359,25 @@ body {
 </div>
 
 <script>
+
 const promptInput = document.getElementById("prompt");
 const messages = document.getElementById("messages");
 const chatArea = document.getElementById("chatArea");
+
+const GUEST_KEY = "senko_guest_id";
+
+function getGuestId() {
+  let id = localStorage.getItem(GUEST_KEY);
+
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(GUEST_KEY, id);
+  }
+
+  return id;
+}
+
+let conversationHistory = [];
 
 function toggleSidebar() {
   document.getElementById("sidebar")
@@ -384,9 +400,12 @@ function addMessage(text, type) {
 
 function newChat() {
   messages.innerHTML = "";
+  conversationHistory = [];
+
   document.getElementById("welcome").style.display = "block";
   document.getElementById("history").textContent =
     "Belum ada percakapan";
+
   promptInput.value = "";
 }
 
@@ -403,6 +422,7 @@ async function sendMessage() {
   const typing = document.createElement("div");
   typing.className = "typing";
   typing.textContent = "Senko sedang mengetik...";
+
   messages.appendChild(typing);
 
   chatArea.scrollTop = chatArea.scrollHeight;
@@ -410,34 +430,55 @@ async function sendMessage() {
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
+
       headers: {
         "Content-Type": "application/json"
       },
+
       body: JSON.stringify({
-        message: text
+        message: text,
+        userId: getGuestId(),
+        isGuest: true,
+        history: conversationHistory
       })
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      throw new Error("API error " + response.status);
+      throw new Error(
+        data.error || "Server error: " + response.status
+      );
     }
 
-    const data = await response.json();
+    if (!data.reply) {
+      throw new Error("Server tidak mengirim jawaban.");
+    }
 
     typing.remove();
 
-    addMessage(
-      data.reply || "Maaf, Senko belum bisa menjawab.",
-      "ai"
+    addMessage(data.reply, "ai");
+
+    conversationHistory.push(
+      { role: "user", text: text },
+      { role: "model", text: data.reply }
     );
+
+    conversationHistory =
+      conversationHistory.slice(-12);
+
+    document.getElementById("history").textContent =
+      "Percakapan aktif";
 
   } catch (error) {
     typing.remove();
+
     addMessage(
-      "Koneksi ke server bermasalah. Coba lagi nanti ya!",
+      "Gagal: " + error.message,
       "ai"
     );
-    console.error(error);
+
+    console.error("SENKO FRONTEND:", error);
   }
 }
 
@@ -447,6 +488,7 @@ promptInput.addEventListener("keydown", function(e) {
     sendMessage();
   }
 });
+
 </script>
 
 </body>
